@@ -2,6 +2,8 @@
 # https://cran.r-project.org/web/packages/geojsonR/vignettes/the_geojsonR_package.html
 # See https://native-land.ca/resources/api-docs/#Maps
 
+# See also https://tmieno2.github.io/R-as-GIS-for-Economists/simple-feature-geometry-simple-feature-geometry-list-column-and-simple-feature.html
+
 # Install necessary libraries
 #install.packages("sf")
 #install.packages("ggplot2")
@@ -22,73 +24,68 @@ response <- httr::GET(
 features <- httr::content(response, "parsed")
 
 ## *** For now restrict to 3 features. ***
-features <- features[1:3]
+featurex <- features[1:3]
 
-## *** The following leads to an empty list object.
-# Filter out features with inconsistent coordinate dimensionality
-filtered_features <- list()
-for (feature in features) {
-  tryCatch({
-    # Attempt to construct a shapely shape from the geometry
-    # *** This line does not work ***.
-    shape <- sf::st_as_sfc(feature$geometry)
-    
-    # *** This line ignores the 
-    # filtered_features <- append(filtered_features, list(feature))
-    filtered_features <- append(filtered_features, list(shape))
-  }, error = function(e) {
-    # If the shape construction fails, skip this feature
-  })
+#################
+features_reform <- function(features) {
+  out <- tibble::as_tibble(
+    lapply(purrr::transpose(
+      purrr::transpose(features)$properties),
+      unlist))
+  
+  # Set up geometry coordinates
+  tmpfn <- function(feature) {
+    out <- lapply(feature$geometry$coordinates,
+                  function(x) {
+                    matrix(unlist(x),
+                           ncol = 2, byrow = TRUE)
+                  })
+    # Split by polygon or multipolygon
+    # If it fails, set to NA
+    tryCatch(
+      if(length(out) == 1)
+        sf::st_polygon(out)
+      else
+        sf::st_multipolygon(list(out)),
+      error = function(e) NA)
+  }
+  geometry <- lapply(features, tmpfn)
+  
+  out <- dplyr::filter(out, !is.na(geometry)) |>
+    dplyr::mutate(geometry = geometry[!is.na(geometry)])
+  
+  sf::st_as_sf(out)
 }
+features <- features_reform(features)
 
-## *** Following is an attempt to do something. Not working. ***
-data_geojson <- list(type = "FeatureCollection", features = features)
-data_geojson <- geojsonio::geojson_list(data_geojson)
-data_gpd <- geojsonio::geojson_sf(data_geojson)
+oceti <- dplyr::filter(features, Name == "Očhéthi Šakówiŋ")
+lakota <- dplyr::filter(features, grepl("Lakota", Name))
 
-## Below are more attempts, but no success.
-
-data_geojson <- list(type = "FeatureCollection", features = features)
-class(data_geojson) <- c("sf", "data.frame")
-
-# Convert the GeoJSON to a GeoDataFrame
-data_gpd <- sf::st_as_sf(data_geojson)
-
-data_geojson <- jsonlite::toJSON(data_geojson)
-
-data_geojson <- geojsonsf::geojson_sf(as.character(data_geojson))
-
-# Wrap filtered features in a list to create a valid GeoJSON
-data_geojson <- list(type = "FeatureCollection", features = filtered_features)
-
-# Convert the GeoJSON to a GeoDataFrame
-ocheti_sakowin <- sf::st_as_sf(data_geojson)
-
-# Filter for Ocheti Sakowin
-oss_gdf <- ocheti_sakowin[ocheti_sakowin$Name == "Očhéthi Šakówiŋ", ]
-print(oss_gdf$description)
-
-# Convert the GeoJSON to a GeoDataFrame
-lakota_lands <- sf::st_as_sf(data_geojson)
-
-# Filter data for Lakȟótiyapi (Lakota)
-lak_gdf <- lakota_lands[lakota_lands$Name == "Lakȟótiyapi (Lakota)", ]
-print(lak_gdf$description)
+ggplot2::ggplot() +
+  ggplot2::geom_sf(data = oceti, fill = "blue", alpha = 0.25,
+                   ggplot2::aes(label = 'Očhéthi Šakówiŋ Territory')) +
+  ggplot2::geom_sf(data = lakota, fill = "green", alpha = 0.25,
+                   ggplot2::aes(label = 'Lakȟótiyapi (Lakota) Territory')) +
+  ggplot2::labs(title =
+                  "Territories of Očhéthi Šakówiŋ and Lakȟótiyapi (Lakota)") +
+  ggplot2::theme_minimal() +
+  ggplot2::theme(legend.position = "bottom") +
+  ggplot2::scale_fill_manual(
+    values = c("Očhéthi Šakówiŋ Territory" = "cornflowerblue",
+               "Lakȟótiyapi (Lakota) Territory" = "palegreen")) +
+  ggplot2::guides(fill = ggplot2::guide_legend(title = "Territory"))
 
 # Calculate the bounding box
-bbox <- sf::st_bbox(oss_gdf)
-xmin <- bbox["xmin"]
-ymin <- bbox["ymin"]
-xmax <- bbox["xmax"]
-ymax <- bbox["ymax"]
+bbox <- sf::st_bbox(oceti, lakota)
 
 # Plot the data
 ggplot2::ggplot() +
-  ggplot2::geom_sf(data = oss_gdf, fill = "blue", alpha = 0.5,
+  ggplot2::geom_sf(data = oceti, fill = "blue", alpha = 0.1,
                    ggplot2::aes(label = 'Očhéthi Šakówiŋ Territory')) +
-  ggplot2::geom_sf(data = lak_gdf, fill = "green", alpha = 0.5,
+  ggplot2::geom_sf(data = lakota, fill = "green", alpha = 0.1,
                    ggplot2::aes(label = 'Lakȟótiyapi (Lakota) Territory')) +
-  ggplot2::coord_sf(xlim = c(xmin, xmax), ylim = c(ymin, ymax)) +
+  ggplot2::coord_sf(xlim = bbox[c("xmin","xmax")],
+                    ylim = bbox[c("ymin","ymax")]) +
   ggplot2::labs(title =
     "Territories of Očhéthi Šakówiŋ and Lakȟótiyapi (Lakota)") +
   ggplot2::theme_minimal() +
