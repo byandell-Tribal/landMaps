@@ -20,72 +20,61 @@
 #library(dplyr)
 
 #################
-features_reform <- function(features) {
-  out <- tibble::as_tibble(
-    lapply(purrr::transpose(
-      purrr::transpose(features)$properties),
-      unlist))
-  
-  # Set up geometry coordinates
-  tran2 <- function(x) {
-    # Some geometry$coordinates have a 3rd element (of 0) for points.
-    # Take first two elements of every list element.
-    # Transpose do make column matrix
-    t(sapply(x, function(y) unlist(y)[1:2]))
-  }
-  tran2l <- function(x) tran2(x[[1]])
-  
-  # Main routine
-  tran_feature <- function(feature) {
-    type <- feature$geometry$type
-    out <- switch(type,
-      Polygon = {
-        # Polygon has node dimension in second list level.
-        # Return as list of matrices.
-        lapply(feature$geometry$coordinates, tran2)
-      },
-      MultiPolygon = {
-        # MultiPolygon has node dimension in third level.
-        # Return as list of lists of matrices.
-        list(lapply(feature$geometry$coordinates, tran2l))
-      })
-  
-    # Split by polygon or multipolygon
-    # If it fails, set to NA
-    tryCatch(
-      switch(type,
-        Polygon = sf::st_polygon(out),
-        MultiPolygon = sf::st_multipolygon(out)),
-      error = function(e) NA)
-  }
-  geometry <- lapply(features, tran_feature)
-  
-  # Check of is.na takes care of issues not caught.
-  # All issues currently taken care of.
-  out <- dplyr::filter(out, !is.na(geometry)) |>
-    dplyr::mutate(geometry = geometry[!is.na(geometry)])
-  
-  sf::st_as_sf(out)
-}
+source("R/features_reform.R")
 ###########################
 
-##### Oceti Sakowin and Lakota Lands ######
-# Send GET request to the API
-response <- httr::GET(
-  "https://native-land.ca/api/index.php?maps=languages,territories")
-features <- httr::content(response, "parsed")
-featurex <- features_reform(features)
+###########################
+# The native-land.ca just reorganized their API.
+# I have put my API key in folder `data` local to my computer.
+nativeLandAPI <- readRDS("data/nativeLandAPI.rds")
+# Get full downloads at `https://api-docs.native-land.ca/full-geojsons`
+# using your own key. I have done that and put entries in my `data` folder.
 
-oceti <- dplyr::filter(featurex, Name == "Očhéthi Šakówiŋ")
-lakota <- dplyr::filter(featurex, grepl("Lakota", Name))
+territories <- features_reform(rjson::fromJSON(file = "data/territories")$features)
+languages <- features_reform(rjson::fromJSON(file = "data/languages")$features)
+treaties <- features_reform(rjson::fromJSON(file = "data/treaties")$features)
+
+nativeLand <- dplyr::bind_rows(
+  territory = territories,
+  language  = languages,
+  treaty    = treaties,
+  .id = "type")
+nativeLand$geometry <- NULL
+nativeLand$id <- NULL
+nativeLand$color <- NULL
+saveRDS(nativeLand, "data/NativeLand.rds")
+
+
+## Carry on from below.
+
+nativeLand <- readRDS("data/NativeLand.rds")
+##### Oceti Sakowin and Lakota Lands ######
+oceti <- dplyr::filter(territories, grepl("oceti-sakowin", Slug))
+lakota <- dplyr::filter(languages, grepl("lakota", Slug))
+
+grep("oceti", territories$Slug)
+grep("oceti-sakowin", territories$Slug)
+grep("oceti-sakowin-sioux", territories$Slug)
+grep("sioux", territories$Slug)
+
+slug <- territories$Slug[grep("oceti", territories$Slug)]
+slug <- dplyr::filter(nativeLand,
+                      grepl("oceti", .data$Slug),
+                      .data$type == "territory")$Slug
+
+#Direct request. Challenge is you need to know the Slug exactly
+response <- features_reform(httr::content(httr::GET( 
+  paste0("https://native-land.ca/api/index.php?maps=territories",
+         "&name=", slug, # This is the Slug
+         "&key=", nativeLandAPI)), "parsed"))
 
 ggplot2::ggplot() +
   ggplot2::geom_sf(data = oceti, fill = "blue", alpha = 0.25,
-                   ggplot2::aes(label = 'Očhéthi Šakówiŋ Territory')) +
+                   ggplot2::aes(label = paste(.data$Name, 'Territory'))) +
   ggplot2::geom_sf(data = lakota, fill = "green", alpha = 0.25,
-                   ggplot2::aes(label = 'Lakȟótiyapi (Lakota) Territory')) +
+                   ggplot2::aes(label = paste(.data$Name, 'Language'))) +
   ggplot2::labs(title =
-                  "Territories of Očhéthi Šakówiŋ and Lakȟótiyapi (Lakota)") +
+    paste(oceti$Name, "Territory and", lakota$Name, "Language")) +
   ggplot2::theme_minimal() +
   ggplot2::theme(legend.position = "bottom") +
   ggplot2::scale_fill_manual(
@@ -114,8 +103,10 @@ ggplot2::ggplot() +
   ggplot2::guides(fill = ggplot2::guide_legend(title = "Territory"))
 
 #########################################################
-menominee <- dplyr::filter(featurex, Name == "Menominee")
-menominee_lang <- dplyr::filter(featurex, Slug == "menominee")
+# Menominee
+
+menominee <- dplyr::filter(treaties, Name == "Menominee")
+menominee_lang <- dplyr::filter(languages, Slug == "menominee")
 
 ggplot2::ggplot() +
   ggplot2::geom_sf(data = menominee, fill = "blue", alpha = 0.25) +
@@ -132,6 +123,10 @@ ggplot2::ggplot() +
 #########################################################
 # Below is testing to figure out strange structure of object
 # returned from native-land API.
+# The latest API removes the spurious 3rd dimension
+# but still has (multi)polygons as list of list rather than matrix.
+
+features <- rjson::fromJSON(file = "data/territories")$features
 
 # Various useful summaries.
 types <- sapply(features, function(x) x$geometry$type)
@@ -151,7 +146,7 @@ mdimmax <- sapply(features, function(x)
 # Organized summaries in dataframe to check issues.
 polys <- tibble::as_tibble(data.frame(types,lens,lists,dims,dimmin, dimmax, mdims)) |>
   dplyr::mutate(entry = dplyr::row_number()) |>
-  dplyr::filter(types == "Polygon") |>
+  dplyr::filter(types == "Polygon")
 # So for Polygon, need to pick up dimension
 multis <- tibble::as_tibble(data.frame(types,lens,lists,dims,mdims, mdimmin, mdimmax)) |>
   dplyr::mutate(entry = dplyr::row_number()) |>
