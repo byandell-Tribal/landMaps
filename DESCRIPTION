@@ -1,0 +1,15 @@
+Package: nativeLand
+Version: 0.1.0
+Date: 2024-10-15
+Title: native-land.ca wrapper
+Description: Tools to study native-land data
+Authors@R: c(person("Brian S Yandell",
+                role = c("aut","cre"),
+                email = "brian.yandell@wisc.edu"))
+Depends:
+    R (>= 4.2.0)
+Imports:
+    dplyr, ggplot2, purrr, rjson, sf, shiny, tibble
+License: GPL-3
+Encoding: UTF-8
+RoxygenNote: 7.3.2

@@ -147,24 +147,6 @@ ggplot2::ggplot() +
   ggplot2::guides(fill = ggplot2::guide_legend(title = "Territory"))
 
 #########################################################
-# Menominee
-
-menominee <- dplyr::filter(treaties, Name == "Menominee")
-menominee_lang <- dplyr::filter(languages, Slug == "menominee")
-
-ggplot2::ggplot() +
-  ggplot2::geom_sf(data = menominee, fill = "blue", alpha = 0.25) +
-  ggplot2::geom_sf(data = menominee_lang, fill = "green", alpha = 0.25) +
-  ggplot2::labs(title =
-                  "Territories of Menominee and Oma͞eqnomenew-ahkew") +
-  ggplot2::theme_minimal() +
-  ggplot2::theme(legend.position = "bottom")# +
-#  ggplot2::scale_fill_manual(
-#    values = c("Menominee Territory" = "cornflowerblue",
-#               "Oma͞eqnomenew-ahke Territory" = "palegreen")) +
-#  ggplot2::guides(fill = ggplot2::guide_legend(title = "Territory"))
-
-#########################################################
 # Below is testing to figure out strange structure of object
 # returned from native-land API.
 # The latest API removes the spurious 3rd dimension

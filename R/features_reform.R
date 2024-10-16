@@ -8,8 +8,7 @@
 #' @importFrom dplyr filter mutate
 #' @importFrom purrr transpose
 #' @importFrom sf st_as_sf st_multipolygon st_polygon
-#'
-#' @examples
+
 features_reform <- function(features) {
   out <- tibble::as_tibble(
     lapply(purrr::transpose(

@@ -1,3 +1,13 @@
+#' ggplot of nativeLand data
+#'
+#' @param object simple features object
+#' @param colors vector of colors
+#' @param title character string
+#'
+#' @return gg object
+#' @export
+#' @importFrom ggplot2 geom_sf ggplot guide_legend guides labs scale_fill_manual
+#'             theme theme_minimal
 ggplot_nativeLand <- function(object, colors = NULL, title = title_names) {
   
   if(is.null(colors)) {
