@@ -61,11 +61,11 @@ saved to
 
 ```{r}
 nativeLandData <- dplyr::bind_rows(
-  territories = features_reform(
+  territories = nativeLand::features_reform(
     rjson::fromJSON(file = "data/territories")$features),
-  languages   = features_reform(
+  languages   = nativeLand::features_reform(
     rjson::fromJSON(file = "data/languages")$features),
-  treaties    = features_reform(
+  treaties    = nativeLand::features_reform(
     rjson::fromJSON(file = "data/treaties")$features),
   .id = "category")
 ```
@@ -117,7 +117,7 @@ nativeLand::ggplot_nativeLand(oceti_sakowin)
 ```
 
 ```{r}
-nativeLand::ggplot_nativeLand(oceti_sakowin, label = FALSE, wrap = TRUE)
+nativeLand::ggplot_nativeLand(oceti_sakowin, wrap = TRUE)
 ```
 
 ### Menominee Lands
