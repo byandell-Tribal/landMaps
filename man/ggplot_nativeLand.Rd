@@ -4,7 +4,13 @@
 \alias{ggplot_nativeLand}
 \title{ggplot of nativeLand data}
 \usage{
-ggplot_nativeLand(object, colors = NULL, title = title_names)
+ggplot_nativeLand(
+  object,
+  colors = NULL,
+  title = title_names,
+  label = TRUE,
+  wrap = FALSE
+)
 }
 \arguments{
 \item{object}{simple features object}
@@ -12,6 +18,10 @@ ggplot_nativeLand(object, colors = NULL, title = title_names)
 \item{colors}{vector of colors}
 
 \item{title}{character string}
+
+\item{label}{include labels if `TRUE`}
+
+\item{wrap}{facet wrap if `TRUE`}
 }
 \value{
 gg object

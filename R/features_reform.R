@@ -10,6 +10,8 @@
 #' @importFrom sf st_as_sf st_multipolygon st_polygon
 
 features_reform <- function(features) {
+  if(!length(features)) return(NULL)
+  
   out <- tibble::as_tibble(
     lapply(purrr::transpose(
       purrr::transpose(features)$properties),

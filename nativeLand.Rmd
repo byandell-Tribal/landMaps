@@ -32,10 +32,6 @@ and
 R libraries, as well as
 [tidyverse](https://www.tidyverse.org/).
 
-```{r}
-for(i in dir("R")) source(file.path("R", i))
-```
-
 The
 [native-land.ca](https://native-land.ca/resources/api-docs/)
 just reorganized their API.
@@ -58,8 +54,13 @@ using your own key.
 I have done that and put entries in my (local) `data` folder.
 Here I read those GeoJSON files into a `sf` data frame.
 
+I save this locally for my own possible use.
+This object is **NOT** used in the package, nor is it
+saved to
+[github](https://github.com/byandell-Tribal/nativeLand).
+
 ```{r}
-nativeLand <- dplyr::bind_rows(
+nativeLandData <- dplyr::bind_rows(
   territories = features_reform(
     rjson::fromJSON(file = "data/territories")$features),
   languages   = features_reform(
@@ -69,10 +70,8 @@ nativeLand <- dplyr::bind_rows(
   .id = "category")
 ```
 
-I save this locally for my own use.
-
 ```{r eval=FALSE}
-saveRDS(nativeLand, "data/NativeLand.rds")
+saveRDS(nativeLandData, "data/NativeLandData.rds")
 ```
 
 ### Native Land Slug (lookup names)
@@ -82,122 +81,74 @@ useful for name lookups later.
 It would be nice if `native-land.ca` had this directly.
 
 ```{r}
-nativeLandSlug <- dplyr::select(nativeLand, category, Slug)
+nativeLandSlug <- dplyr::select(nativeLandData, category, Slug)
 nativeLandSlug$geometry <- NULL
 saveRDS(nativeLandSlug, "data/NativeLandSlug.rds")
 ```
 
+This file is saved locally, and used in the shiny app
+[nativeLand::nativeLandApp()].
+However, it is not saved to github.
+As constructed, it include only the `category` and `Slug`
+columns from
+[native-land.ca](https://native-land.ca/resources/api-docs/).
+
 ### Query for particlar territory, language and treaty combinations
+
+This pulls all entries involving `akota` (Lakota and Nakota languages),
+`sioux` (Oceti Sakowin Sioux) and `laramie` (Fort Laramie treaties).
 
 ```{r}
 dplyr::filter(nativeLandSlug, grepl("akota|sioux|laramie", Slug))
 ```
 
-### Oceti Sakowin and Lakota Lands
+### Plot Oceti Sakowin and Lakota Lands
+
+This plots the Oceti Sakowin territories, languages and treaties
+maps from `native-land.ca`, either together or on separate facets.
 
 ```{r}
-oceti <- dplyr::filter(nativeLand, grepl("oceti", Slug))
-lakota <- dplyr::filter(nativeLand, grepl("akota", Slug))
-laramie <- dplyr::filter(nativeLand, grepl("laramie", Slug))
-oceti_sakowin <- dplyr::filter(nativeLand, grepl("akota|sioux|laramie", Slug))
+oceti_sakowin <- dplyr::filter(nativeLandData,
+                               grepl("akota|sioux|laramie", Slug))
 ```
 
 ```{r}
-print(ggplot_nativeLand(oceti_sakowin))
+nativeLand::ggplot_nativeLand(oceti_sakowin)
+```
+
+```{r}
+nativeLand::ggplot_nativeLand(oceti_sakowin, label = FALSE, wrap = TRUE)
 ```
 
 ### Menominee Lands
 
 ```{r}
-menominee <- dplyr::filter(nativeLand, grepl("menominee", Slug))
+menominee <- dplyr::filter(nativeLandData,
+                           grepl("menominee", Slug))
 ```
 
 ```{r}
-print(ggplot_nativeLand(menominee))
+nativeLand::ggplot_nativeLand(menominee)
 ```
 
-#Direct request. Challenge is you need to know the Slug exactly
+### Direct request
+
+The `get_nativeLand` uses the `native-land.ca` API along with the key.
+The challenge is you need to know the Slug exactly,
+or use a lookup data frame such as `nativeLandSlug`.
 
 ```{r}
-get_nativeLand("territories", "oceti", nativeLandAPI, nativeLandSlug)
+nativeLand::get_nativeLand("territories", "oceti", nativeLandAPI)
 ```
 
 ```{r}
-knitr::knit_exit()
+nativeLand::ggplot_nativeLand(
+  nativeLand::get_nativeLand("territories", "oceti-sakowin-sioux",
+                           nativeLandAPI))
 ```
 
-# Calculate the bounding box
-bbox <- sf::st_bbox(oceti, lakota)
-
-# Plot the data
-ggplot2::ggplot() +
-  ggplot2::geom_sf(data = oceti, fill = "blue", alpha = 0.1,
-                   ggplot2::aes(label = 'Očhéthi Šakówiŋ Territory')) +
-  ggplot2::geom_sf(data = lakota, fill = "green", alpha = 0.1,
-                   ggplot2::aes(label = 'Lakȟótiyapi (Lakota) Territory')) +
-  ggplot2::coord_sf(xlim = bbox[c("xmin","xmax")],
-                    ylim = bbox[c("ymin","ymax")]) +
-  ggplot2::labs(title =
-    "Territories of Očhéthi Šakówiŋ and Lakȟótiyapi (Lakota)") +
-  ggplot2::theme_minimal() +
-  ggplot2::theme(legend.position = "bottom") +
-  ggplot2::scale_fill_manual(
-    values = c("Očhéthi Šakówiŋ Territory" = "cornflowerblue",
-               "Lakȟótiyapi (Lakota) Territory" = "palegreen")) +
-  ggplot2::guides(fill = ggplot2::guide_legend(title = "Territory"))
-
-#########################################################
-# Below is testing to figure out strange structure of object
-# returned from native-land API.
-# The latest API removes the spurious 3rd dimension
-# but still has (multi)polygons as list of list rather than matrix.
-
-features <- rjson::fromJSON(file = "data/territories")$features
-
-# Various useful summaries.
-types <- sapply(features, function(x) x$geometry$type)
-lens <- sapply(features, function(x) length(x$geometry$coordinates))
-lists <- sapply(features, function(x) length(x$geometry$coordinates[[1]]))
-dims <- sapply(features, function(x) length(x$geometry$coordinates[[1]][[1]]))
-dimmin <- sapply(features, function(x)
-  min(sapply(x$geometry$coordinates[[1]], length)))
-dimmax <- sapply(features, function(x)
-  max(sapply(x$geometry$coordinates[[1]], length)))
-mdims <- sapply(features, function(x) length(x$geometry$coordinates[[1]][[1]][[1]]))
-mdimmin <- sapply(features, function(x)
-  min(sapply(x$geometry$coordinates[[1]][[1]], length)))
-mdimmax <- sapply(features, function(x)
-  max(sapply(x$geometry$coordinates[[1]][[1]], length)))
-
-# Organized summaries in dataframe to check issues.
-polys <- tibble::as_tibble(data.frame(types,lens,lists,dims,dimmin, dimmax, mdims)) |>
-  dplyr::mutate(entry = dplyr::row_number()) |>
-  dplyr::filter(types == "Polygon")
-# So for Polygon, need to pick up dimension
-multis <- tibble::as_tibble(data.frame(types,lens,lists,dims,mdims, mdimmin, mdimmax)) |>
-  dplyr::mutate(entry = dplyr::row_number()) |>
-  dplyr::filter(types != "Polygon")
-table(polys$dims)
-table(multis$mdims)
-
-
-# Following shows that 3rd coordinate is either missing or 0, so drop.
-# Find values of 3rd coordinate for Polygon
-p3 <- lapply(features, function(x) {
-  out <- unlist(sapply(x$geometry$coordinates[[1]], function(y) ifelse(length(y) == 3, y[3], NA)))
-  z = c(na = sum(is.na(out)), ze = sum(!is.na(out) & out == 0))
-  c(z, ot = length(out) - sum(z))
-})
-p3 <- dplyr::bind_rows(p3) |>
-  dplyr::mutate(row = dplyr::row_number()) |>
-  dplyr::filter(types == "Polygon" & dimmax == 3)
-
-# Find values of 3rd coordinate for MultiPolygon
-m3 <- lapply(features, function(x) {
-  out <- unlist(sapply(x$geometry$coordinates[[1]][[1]], function(y) ifelse(length(y) == 3, y[3], NA)))
-  z = c(na = sum(is.na(out)), ze = sum(!is.na(out) & out == 0))
-  c(z, ot = length(out) - sum(z))
-})
-m3 <- dplyr::bind_rows(m3) |>
-  dplyr::mutate(row = dplyr::row_number()) |>
-  dplyr::filter(types == "MultiPolygon" & mdimmax == 3)
+```{r}
+nativeLand::ggplot_nativeLand(
+  nativeLand::get_nativeLand("territories", "oceti",
+                             nativeLandAPI, nativeLandSlug))
+```

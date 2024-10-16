@@ -4,38 +4,39 @@
 #' @return reactive server
 #' @export
 #' @rdname nativeLand
-#' @importFrom shiny bootstrapPage checkboxInput moduleServer NS plotOutput
-#'             renderPlot renderUI selectInput shinyApp sliderInput uiOutput
-#' @importFrom graphics hist lines rug
-#' @importFrom stats density
+#' @importFrom shiny a bootstrapPage checkboxInput moduleServer NS
+#'             plotOutput renderPlot renderUI selectInput shinyApp sliderInput
+#'             uiOutput
 nativeLandServer <- function(id) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
     # URL for
     output$password <- shiny::renderUI({
-      url <- shiny::a("Native Land API", 
-                      href = "https://api-docs.native-land.ca/")
       shiny::tagList(
-        shiny::renderText(paste("Set up key at", url)),
+        "Set up key at",
+        shiny::a("Native Land API", href = "https://api-docs.native-land.ca/"),
         shiny::passwordInput(ns("password"), "Enter Native Land Key")
       )
     })
     
     slug <- readRDS("data/NativeLandSlug.rds")
-    output$tribe <- shiny::renderUI({
-      shiny::selectInput(ns("tribe"), "Tribe", c("oceti","lakota","menominee"))
+    slugfest <- tidyr::unite(slug, catname, sep = ", ")$catname
+    output$catname <- shiny::renderUI({
+      shiny::selectizeInput(ns("catname"), "Category, Name:", slugfest,
+                            multiple = TRUE)
     })
     
     tribes <- shiny::reactive({
-      shiny::req(input$category, input$tribe, input$password)
-      get_nativeLand(input$category, input$tribe, input$password,
-                     slug)
+      shiny::req(input$catname, input$password)
+      category <- stringr::str_remove(input$catname, ", .*$")
+      name <- stringr::str_remove(input$catname, "^.*, ")
+      get_nativeLand(category, name, input$password, slug)
     })
     
     # Output Main Plot
     output$main_plot <- shiny::renderPlot({
-      print(ggplot_nativeLand(tribes()))
+      print(ggplot_nativeLand(tribes(), wrap = TRUE))
     })
   })
 }
@@ -48,9 +49,7 @@ nativeLandInput <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::uiOutput(ns("password")),
-    shiny::selectInput(ns("category"), "Category",
-                       c("territories","languages","treaties")),
-    shiny::uiOutput(ns("tribe"))
+    shiny::uiOutput(ns("catname"))
   )
 }
 #' Shiny Module Output for nativeLand

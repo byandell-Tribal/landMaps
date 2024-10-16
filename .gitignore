@@ -53,3 +53,4 @@ rsconnect/
 Images/
 *.cache/
 data/
+inst/
