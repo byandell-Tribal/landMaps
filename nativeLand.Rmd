@@ -40,11 +40,11 @@ You can cut and paste your own
 
 ```{r eval=FALSE}
 if(!dir.exists("data") dir.create("data"))
-saveRDS(readline(), "data/nativeLandAPI.rds")
+saveRDS(readline(), "data/nativeLandKey.rds")
 ```
 
 ```{r}
-nativeLandAPI <- readRDS("data/nativeLandAPI.rds")
+nativeLandKey <- readRDS("data/nativeLandKey.rds")
 ```
 
 ### Full downloads
@@ -138,17 +138,17 @@ The challenge is you need to know the Slug exactly,
 or use a lookup data frame such as `nativeLandSlug`.
 
 ```{r}
-nativeLand::get_nativeLand("territories", "oceti", nativeLandAPI)
+nativeLand::get_nativeLand("territories", "oceti", nativeLandKey)
 ```
 
 ```{r}
 nativeLand::ggplot_nativeLand(
   nativeLand::get_nativeLand("territories", "oceti-sakowin-sioux",
-                           nativeLandAPI))
+                           nativeLandKey))
 ```
 
 ```{r}
 nativeLand::ggplot_nativeLand(
   nativeLand::get_nativeLand("territories", "oceti",
-                             nativeLandAPI, nativeLandSlug))
+                             nativeLandKey, nativeLandSlug))
 ```

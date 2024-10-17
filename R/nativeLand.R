@@ -4,7 +4,7 @@
 #' @return reactive server
 #' @export
 #' @rdname nativeLand
-#' @importFrom shiny a bootstrapPage checkboxInput moduleServer NS
+#' @importFrom shiny a bootstrapPage checkboxInput h2 moduleServer NS
 #'             plotOutput renderPlot renderUI selectInput shinyApp sliderInput
 #'             uiOutput
 nativeLandServer <- function(id) {
@@ -23,7 +23,7 @@ nativeLandServer <- function(id) {
     slug <- readRDS("data/NativeLandSlug.rds")
     slugfest <- tidyr::unite(slug, catname, sep = ", ")$catname
     output$catname <- shiny::renderUI({
-      shiny::selectizeInput(ns("catname"), "Category, Name:", slugfest,
+      shiny::selectizeInput(ns("catname"), "Select Category, Name:", slugfest,
                             multiple = TRUE)
     })
     
@@ -48,6 +48,7 @@ nativeLandServer <- function(id) {
 nativeLandInput <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
+    shiny::h2("Native Land Maps"),
     shiny::uiOutput(ns("password")),
     shiny::uiOutput(ns("catname"))
   )

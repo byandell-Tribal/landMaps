@@ -10,10 +10,9 @@
 #' @export
 #' @importFrom ggplot2 element_text facet_wrap theme
 #' @importFrom rlang .data
-#' @importFrom ggplotSpatial ggplot_layer_name ggplot_layer_sf ggplot_sf
 ggplot_nativeLand <- function(object, colors = NULL, title = title_names,
                               label = TRUE, wrap = FALSE) {
-  if(is.null(object)) return(NULL)
+  if(is.null(object)) return(ggplot2::ggplot())
   
   if(is.null(colors)) {
     colors <- object$color
@@ -32,13 +31,13 @@ ggplot_nativeLand <- function(object, colors = NULL, title = title_names,
   title_names <- paste(scale_names, collapse = ", ")
   names(colors) <- scale_names
   
-  p <- ggplotSpatial::ggplot_sf(object, title)
+  p <- ggplot_sf(object, title)
   for(i in seq_len(nrow(object))) {
-    p <- ggplotSpatial::ggplot_layer_sf(
+    p <- ggplot_layer_sf(
       object[i,], p, color = colors[i], alpha = 0.25, linewidth = 1)
   }
   if(label) {
-    p <- ggplotSpatial::ggplot_layer_name(object, p, label = "Name")
+    p <- ggplot_layer_name(object, p, label = "Name")
   }
   if(wrap) {
     p <- p + 

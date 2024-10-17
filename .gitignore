@@ -54,3 +54,4 @@ Images/
 *.cache/
 data/
 inst/
+*.html
