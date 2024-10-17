@@ -50,12 +50,6 @@ if(file.exists(filename <- "data/census_geometry.rds")) {
 ```
 
 ```{r}
-p_states <- landMaps:::ggplot_layer_sf(
-  dplyr::filter(census_geometry, geography == "states"))
-p_states
-```
-
-```{r}
 sdTribes <- c("Rosebud", "Pine Ridge", "Crow Creek", "Cheyenne River",
               "Lower Brule", "Santee Reservation", "Standing Rock",
               "Yankton", "Flandreau")
@@ -74,6 +68,11 @@ Can constrain area using bounding box `sf::st_bbox`.
 
 ```{r}
 bbox_sd_tribes <- sf::st_bbox(sd_tribes)
+```
+
+```{r}
+p_states <- landMaps:::ggplot_layer_sf(
+  dplyr::filter(census_geometry, geography == "states"))
 ```
 
 ```{r}
