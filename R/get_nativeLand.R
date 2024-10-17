@@ -10,6 +10,7 @@
 #' @importFrom dplyr filter mutate
 #' @importFrom httr content GET
 #' @importFrom stringr str_replace
+#' @importFrom sf st_as_sf st_crs
 get_nativeLand <- function(
     categories = c("territories","languages","treaties"),
     name = NULL,
@@ -38,5 +39,11 @@ get_nativeLand <- function(
                  "&key=", key)),
         "parsed"))
   }
-  dplyr::mutate(dplyr::bind_rows(out), category = categories)
+  
+  out <- sf::st_as_sf(
+    dplyr::mutate(
+      dplyr::bind_rows(out),
+      category = categories))
+  sf::st_crs(out) <- 4326
+  out
 }

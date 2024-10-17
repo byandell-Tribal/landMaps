@@ -1,6 +1,7 @@
 #' ggplot of nativeLand data
 #'
 #' @param object simple features object
+#' @param p initial gg plot object
 #' @param colors vector of colors
 #' @param title character string
 #' @param label include labels if `TRUE`
@@ -10,7 +11,8 @@
 #' @export
 #' @importFrom ggplot2 element_text facet_wrap theme
 #' @importFrom rlang .data
-ggplot_nativeLand <- function(object, colors = NULL, title = title_names,
+ggplot_nativeLand <- function(object, p = ggplot_sf(object, title),
+                              colors = NULL, title = title_names,
                               label = TRUE, wrap = FALSE) {
   if(is.null(object)) return(ggplot2::ggplot())
   
@@ -31,7 +33,6 @@ ggplot_nativeLand <- function(object, colors = NULL, title = title_names,
   title_names <- paste(scale_names, collapse = ", ")
   names(colors) <- scale_names
   
-  p <- ggplot_sf(object, title)
   for(i in seq_len(nrow(object))) {
     p <- ggplot_layer_sf(
       object[i,], p, color = colors[i], alpha = 0.25, linewidth = 1)

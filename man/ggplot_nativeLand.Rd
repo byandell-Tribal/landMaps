@@ -6,6 +6,7 @@
 \usage{
 ggplot_nativeLand(
   object,
+  p = ggplot_sf(object, title),
   colors = NULL,
   title = title_names,
   label = TRUE,
@@ -14,6 +15,8 @@ ggplot_nativeLand(
 }
 \arguments{
 \item{object}{simple features object}
+
+\item{p}{initial gg plot object}
 
 \item{colors}{vector of colors}
 

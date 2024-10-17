@@ -6,8 +6,8 @@
 #'
 #' @return gg plot object
 #' @export
-#' @importFrom ggplot2 aes element_text geom_sf ggplot labs theme theme_minimal
-#'             xlab ylab
+#' @importFrom ggplot2 aes element_text geom_sf geom_sf_label ggplot labs theme
+#'             theme_minimal xlab ylab
 #' @importFrom ggrepel geom_text_repel
 #' @importFrom rlang .data
 ggplot_sf <- function(object, title, legend.position = "bottom") {
@@ -59,6 +59,7 @@ ggplot_layer_name <- function(object, p = ggplot2::ggplot(),
                               label = "NAME", color = "black", ...) {
   p +
     ggrepel::geom_text_repel(
+#    ggplot2::geom_sf_label(
       data = object,
       ggplot2::aes(label = .data[[label]], geometry = .data$geometry,
                    size = 10),
