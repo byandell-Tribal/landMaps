@@ -100,21 +100,21 @@ bbox_oceti <- sf::st_bbox(oceti)
 p_states <- landMaps:::ggplot_layer_sf(
   dplyr::filter(census_geometry, geography == "states"))
 p_states +
-  ggplot2::coord_sf(xlim = bbox_oceti[c("xmin","xmax")] + c(-1,1),
-                    ylim = bbox_oceti[c("ymin","ymax")] + c(-1,1))
+  ggplot2::coord_sf(xlim = bbox_oceti[c("xmin","xmax")],
+                    ylim = bbox_oceti[c("ymin","ymax")])
 ```
 
 ```{r warning = FALSE}
 landMaps::ggplot_nativeLand(oceti, p_states) +
-    ggplot2::coord_sf(xlim = bbox_oceti[c("xmin","xmax")] + c(-1,1),
-                      ylim = bbox_oceti[c("ymin","ymax")] + c(-1,1))
+    ggplot2::coord_sf(xlim = bbox_oceti[c("xmin","xmax")],
+                      ylim = bbox_oceti[c("ymin","ymax")])
 ```
 
 ```{r}
 landMaps::ggplot_nativeLand(
   oceti,
   landMaps:::ggplot_layer_sf(sd_tribes, p_states, fill = "green")) +
-    ggplot2::coord_sf(xlim = bbox_oceti[c("xmin","xmax")] + c(-1,1),
-                      ylim = bbox_oceti[c("ymin","ymax")] + c(-1,1))
+    ggplot2::coord_sf(xlim = bbox_oceti[c("xmin","xmax")],
+                      ylim = bbox_oceti[c("ymin","ymax")])
 ```
 
