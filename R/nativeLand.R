@@ -7,6 +7,7 @@
 #' @importFrom shiny a bootstrapPage checkboxInput h2 moduleServer NS
 #'             plotOutput renderPlot renderUI selectInput shinyApp sliderInput
 #'             uiOutput
+#' @importFrom ggplot2 facet_wrap
 nativeLandServer <- function(id) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
@@ -36,7 +37,9 @@ nativeLandServer <- function(id) {
     
     # Output Main Plot
     output$main_plot <- shiny::renderPlot({
-      print(ggplot_nativeLand(tribes(), wrap = TRUE))
+      print(ggplot_sf() + 
+              ggplot_nativeLand(tribes()) +
+              ggplot2::facet_wrap(~ .data$category))
     })
   })
 }

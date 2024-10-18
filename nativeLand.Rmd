@@ -61,11 +61,11 @@ saved to
 
 ```{r}
 nativeLandData <- dplyr::bind_rows(
-  territories = nativeLand::features_reform(
+  territories = landMaps::features_reform(
     rjson::fromJSON(file = "data/territories")$features),
-  languages   = nativeLand::features_reform(
+  languages   = landMaps::features_reform(
     rjson::fromJSON(file = "data/languages")$features),
-  treaties    = nativeLand::features_reform(
+  treaties    = landMaps::features_reform(
     rjson::fromJSON(file = "data/treaties")$features),
   .id = "category")
 ```
@@ -87,7 +87,7 @@ saveRDS(nativeLandSlug, "data/NativeLandSlug.rds")
 ```
 
 This file is saved locally, and used in the shiny app
-[nativeLand::nativeLandApp()].
+[landMaps::nativeLandApp()](https://github.com/byandell-Tribal/landMaps/blob/main/R/nativeLand.R).
 However, it is not saved to github.
 As constructed, it include only the `category` and `Slug`
 columns from
@@ -113,11 +113,14 @@ oceti_sakowin <- dplyr::filter(nativeLandData,
 ```
 
 ```{r}
-nativeLand::ggplot_nativeLand(oceti_sakowin)
+landMaps::ggplot_sf() + 
+  landMaps::ggplot_nativeLand(oceti_sakowin)
 ```
 
 ```{r}
-nativeLand::ggplot_nativeLand(oceti_sakowin, wrap = TRUE)
+landMaps::ggplot_sf() + 
+  landMaps::ggplot_nativeLand(oceti_sakowin) +
+  ggplot2::facet_wrap(~ category)
 ```
 
 ### Menominee Lands
@@ -128,7 +131,7 @@ menominee <- dplyr::filter(nativeLandData,
 ```
 
 ```{r}
-nativeLand::ggplot_nativeLand(menominee)
+landMaps::ggplot_sf() + landMaps::ggplot_nativeLand(menominee)
 ```
 
 ### Direct request
@@ -138,17 +141,19 @@ The challenge is you need to know the Slug exactly,
 or use a lookup data frame such as `nativeLandSlug`.
 
 ```{r}
-nativeLand::get_nativeLand("territories", "oceti", nativeLandKey)
+landMaps::get_nativeLand("territories", "oceti", nativeLandKey)
 ```
 
-```{r}
-nativeLand::ggplot_nativeLand(
-  nativeLand::get_nativeLand("territories", "oceti-sakowin-sioux",
-                           nativeLandKey))
+```{r warning = FALSE}
+landMaps::ggplot_sf() +
+  landMaps::ggplot_nativeLand(
+    landMaps::get_nativeLand("territories", "oceti-sakowin-sioux",
+                             nativeLandKey))
 ```
 
-```{r}
-nativeLand::ggplot_nativeLand(
-  nativeLand::get_nativeLand("territories", "oceti",
+```{r warning = FALSE}
+landMaps::ggplot_sf() +
+  landMaps::ggplot_nativeLand(
+    landMaps::get_nativeLand("territories", "oceti",
                              nativeLandKey, nativeLandSlug))
 ```

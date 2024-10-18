@@ -39,6 +39,7 @@ get_nativeLand <- function(
                  "&key=", key)),
         "parsed"))
   }
+  if(!length(out)) return(NULL)
   
   out <- sf::st_as_sf(
     dplyr::mutate(

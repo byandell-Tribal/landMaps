@@ -1,19 +1,17 @@
 #' ggplot of nativeLand data
 #'
 #' @param object simple features object
-#' @param p initial gg plot object
 #' @param colors vector of colors
 #' @param title character string
 #' @param label include labels if `TRUE`
-#' @param wrap facet wrap if `TRUE`
 #'
 #' @return gg object
 #' @export
-#' @importFrom ggplot2 element_text facet_wrap theme
+#' @importFrom ggplot2 facet_wrap
 #' @importFrom rlang .data
-ggplot_nativeLand <- function(object, p = ggplot_sf(object, title),
+ggplot_nativeLand <- function(object,
                               colors = NULL, title = title_names,
-                              label = TRUE, wrap = FALSE) {
+                              label = TRUE) {
   if(is.null(object)) return(ggplot2::ggplot())
   
   if(is.null(colors)) {
@@ -33,17 +31,18 @@ ggplot_nativeLand <- function(object, p = ggplot_sf(object, title),
   title_names <- paste(scale_names, collapse = ", ")
   names(colors) <- scale_names
   
+  # p is a list of ggplot2 components.
+  p <- list(
+    ggplot2::labs(title = title),
+    ggplot2::scale_fill_manual(colors),
+    ggplot2::guides(fill = ggplot2::guide_legend(title = "Territory")))
+  
   for(i in seq_len(nrow(object))) {
-    p <- ggplot_layer_sf(
-      object[i,], p, color = colors[i], alpha = 0.25, linewidth = 1)
+    p <- c(p, ggplot_layer_sf(
+      object[i,], color = colors[i], alpha = 0.25, linewidth = 1))
   }
   if(label) {
-    p <- ggplot_layer_name(object, p, label = "Name")
-  }
-  if(wrap) {
-    p <- p + 
-      ggplot2::facet_wrap(~ .data$category) +
-      ggplot2::theme(strip.text.x = ggplot2::element_text(size = 10))
+    p <- c(p, ggplot_layer_name(object, label = "Name"))
   }
   p
 }

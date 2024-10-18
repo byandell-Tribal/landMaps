@@ -1,8 +1,8 @@
 Package: landMaps
-Version: 0.3.0
+Version: 0.3.1
 Date: 2024-10-17
-Title: native-land.ca wrapper
-Description: Tools to study native-land data
+Title: Maps of land boundaries
+Description: Tools to study native land data
 Authors@R: c(person("Brian S Yandell",
                 role = c("aut","cre"),
                 email = "brian.yandell@wisc.edu"))

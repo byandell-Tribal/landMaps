@@ -6,33 +6,20 @@
 \alias{ggplot_layer_name}
 \title{Simple feature ggplot wrapper}
 \usage{
-ggplot_sf(object, title, legend.position = "bottom")
+ggplot_sf(legend.position = "bottom")
 
 ggplot_layer_sf(
   object,
-  p = ggplot2::ggplot(),
   color = "black",
   fill = "transparent",
   linewidth = 0.5,
   ...
 )
 
-ggplot_layer_name(
-  object,
-  p = ggplot2::ggplot(),
-  label = "NAME",
-  color = "black",
-  ...
-)
+ggplot_layer_name(object, label = "NAME", color = "black", ...)
 }
 \arguments{
-\item{object}{data frame}
-
-\item{title}{text string}
-
 \item{legend.position}{position of legend (default "bottom")}
-
-\item{p}{gg plot object}
 
 \item{color}{edge color}
 
