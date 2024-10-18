@@ -60,18 +60,20 @@ saved to
 [github](https://github.com/byandell-Tribal/nativeLand).
 
 ```{r}
-nativeLandData <- dplyr::bind_rows(
-  territories = landMaps::features_reform(
-    rjson::fromJSON(file = "data/territories")$features),
-  languages   = landMaps::features_reform(
-    rjson::fromJSON(file = "data/languages")$features),
-  treaties    = landMaps::features_reform(
-    rjson::fromJSON(file = "data/treaties")$features),
-  .id = "category")
-```
-
-```{r eval=FALSE}
-saveRDS(nativeLandData, "data/NativeLandData.rds")
+if(file.exists(filename <- "data/NativeLandData.rds")) {
+  nativeLandData <- readRDS(filename)
+} else {
+  nativeLandData <- dplyr::bind_rows(
+    territories = landMaps::features_reform(
+      rjson::fromJSON(file = "data/territories")$features),
+    languages   = landMaps::features_reform(
+      rjson::fromJSON(file = "data/languages")$features),
+    treaties    = landMaps::features_reform(
+      rjson::fromJSON(file = "data/treaties")$features),
+    .id = "category")
+  sf::st_crs(nativeLandData) <- 4326
+  saveRDS(nativeLandData, filename)
+}
 ```
 
 ### Native Land Slug (lookup names)
@@ -81,9 +83,13 @@ useful for name lookups later.
 It would be nice if `native-land.ca` had this directly.
 
 ```{r}
-nativeLandSlug <- dplyr::select(nativeLandData, category, Slug)
-nativeLandSlug$geometry <- NULL
-saveRDS(nativeLandSlug, "data/NativeLandSlug.rds")
+if(file.exists(filename <- "data/NativeLandSlug.rds")) {
+  nativeLandSlug <- readRDS(filename)
+} else {
+  nativeLandSlug <- dplyr::select(nativeLandData, category, Slug)
+  nativeLandSlug$geometry <- NULL
+  saveRDS(nativeLandSlug, filename)
+}
 ```
 
 This file is saved locally, and used in the shiny app
@@ -156,4 +162,74 @@ landMaps::ggplot_sf() +
   landMaps::ggplot_nativeLand(
     landMaps::get_nativeLand("territories", "oceti",
                              nativeLandKey, nativeLandSlug))
+```
+
+## Intersctions with Wisconsin
+
+
+territories, menominee
+territories, oji-cree
+territories, oneida
+territories, dene-chipewyan
+territories, bodwewadmi-potawatomi
+territories, potawatomi-shawnee-oklahoma
+
+```{r}
+census_geometry <- readRDS("data/census_geometry.rds")
+bbox_wi <- sf::st_bbox(
+  dplyr::filter(census_geometry, geography == "states",
+                NAME %in% c("Wisconsin", "Minnesota", "Michigan")))
+bbox_wi_sf <- tibble::tibble(x = bbox_wi[c("xmin","xmax")],
+                     y = bbox_wi[c("ymin","ymax")]) |> 
+  sf::st_as_sf(coords = c("x", "y")) |> 
+  sf::st_set_crs(sf::st_crs(nativeLandData)) |>
+  #get the bounding box of the two x & y coordintates, make sfc
+  sf::st_bbox() |>
+  sf::st_as_sfc()
+```
+```{r eval=FALSE}
+nativeLandWI <- sf::st_intersection(nativeLandData, bbox_wi_sf)
+```
+
+```{r eval=FALSE, warning = FALSE}
+landMaps::ggplot_sf() +
+  landMaps:::ggplot_layer_sf(dplyr::filter(census_geometry, geography == "states", NAME %in% c("Wisconsin", "Minnesota", "Michigan"))) +
+  landMaps::ggplot_nativeLand(nativeLandWI) +
+  ggplot2::coord_sf(xlim = bbox_wi[c("xmin","xmax")],
+                    ylim = bbox_wi[c("ymin","ymax")])
+
+```
+
+The list below was done by hand using `native-land.ca`.
+There should be a programming way to find the overlap.
+
+```{r}
+wiTribes <- c("potawatomi", "brothertown", "menominee", "anishin", "ho-chunk", "oceti", "odawa", "mississauga", "fox", "wyandot",
+              "myaamia", "niuachi", "dewakan", "wahpe", "yankton",
+              "sisseton")
+name <- dplyr::filter(
+      nativeLandSlug,
+      grepl(paste(wiTribes, collapse = "|"), .data$Slug),
+      grepl("territories", .data$category))$Slug
+nativeLandWIs <- dplyr::filter(nativeLandData,
+                  .data$category == "territories",
+                  .data$Slug %in% name)
+nativeLandWIs$Name
+```
+
+```{r warning = FALSE}
+landMaps::ggplot_sf() +
+  landMaps:::ggplot_layer_sf(dplyr::filter(census_geometry, geography == "states", NAME %in% c("Wisconsin", "Minnesota", "Michigan"))) +
+  landMaps::ggplot_nativeLand(nativeLandWIs,
+                              title = "MN/WI/MI embedded in Native Lands")
+```
+
+```{r warning = FALSE}
+landMaps::ggplot_sf() +
+  landMaps:::ggplot_layer_sf(dplyr::filter(census_geometry, geography == "states", NAME %in% c("Wisconsin", "Minnesota", "Michigan"))) +
+  landMaps::ggplot_nativeLand(nativeLandWIs,
+                              title = "Native Lands overlapping with MN/WI/MI") +
+  ggplot2::coord_sf(xlim = bbox_wi[c("xmin","xmax")],
+                    ylim = bbox_wi[c("ymin","ymax")])
+
 ```
