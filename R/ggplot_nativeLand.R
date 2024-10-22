@@ -30,17 +30,16 @@ ggplot_nativeLand <- function(object,
   
   title_names <- paste(scale_names, collapse = ", ")
   names(colors) <- scale_names
+  object$color <- scale_names
   
   # p is a list of ggplot2 components.
   p <- list(
     ggplot2::labs(title = title),
-    ggplot2::scale_fill_manual(colors),
-    ggplot2::guides(fill = ggplot2::guide_legend(title = "Territory")))
+    ggplot2::scale_color_manual(values = colors))
+#  ,
+#    ggplot2::guides(fill = ggplot2::guide_legend(title = "Territory", position = "right")))
   
-  for(i in seq_len(nrow(object))) {
-    p <- c(p, ggplot_layer_sf(
-      object[i,], color = colors[i], alpha = 0.25, linewidth = 1))
-  }
+  p <- c(p, ggplot_layer_sf(object, alpha = 0.25, linewidth = 1))
   if(label) {
     p <- c(p, ggplot_layer_name(object, label = "Name"))
   }

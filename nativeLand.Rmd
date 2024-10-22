@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = ".")
 ```
 
 This began as a 
@@ -114,13 +115,19 @@ This plots the Oceti Sakowin territories, languages and treaties
 maps from `native-land.ca`, either together or on separate facets.
 
 ```{r}
-oceti_sakowin <- dplyr::filter(nativeLandData,
-                               grepl("akota|sioux|laramie", Slug))
+str(nativeLandData)
 ```
 
 ```{r}
-landMaps::ggplot_sf() + 
-  landMaps::ggplot_nativeLand(oceti_sakowin)
+oceti_sakowin <- dplyr::filter(nativeLandData,
+                               grepl("akota|oceti|laramie",
+                                     .data$Slug))
+```
+
+```{r warning = FALSE}
+landMaps::ggplot_sf(legend.position = "right") + 
+  landMaps::ggplot_nativeLand(oceti_sakowin,
+                              title = "Oceti Sakowin")
 ```
 
 ```{r}
@@ -164,22 +171,21 @@ landMaps::ggplot_sf() +
                              nativeLandKey, nativeLandSlug))
 ```
 
-## Intersctions with Wisconsin
-
-
-territories, menominee
-territories, oji-cree
-territories, oneida
-territories, dene-chipewyan
-territories, bodwewadmi-potawatomi
-territories, potawatomi-shawnee-oklahoma
+## Intersections with Minnesota, Wisconsin and Michigan
 
 ```{r}
 census_geometry <- readRDS("data/census_geometry.rds")
-bbox_wi <- sf::st_bbox(
+census_mnwimi <- dplyr::filter(
+  census_geometry,
+  geography == "states",
+  NAME %in% c("Wisconsin", "Minnesota", "Michigan"))
+```
+
+```{r}
+bbox_mnwimi <- sf::st_bbox(
   dplyr::filter(census_geometry, geography == "states",
                 NAME %in% c("Wisconsin", "Minnesota", "Michigan")))
-bbox_wi_sf <- tibble::tibble(x = bbox_wi[c("xmin","xmax")],
+bbox_mnwimi_sf <- tibble::tibble(x = bbox_wi[c("xmin","xmax")],
                      y = bbox_wi[c("ymin","ymax")]) |> 
   sf::st_as_sf(coords = c("x", "y")) |> 
   sf::st_set_crs(sf::st_crs(nativeLandData)) |>
@@ -187,17 +193,65 @@ bbox_wi_sf <- tibble::tibble(x = bbox_wi[c("xmin","xmax")],
   sf::st_bbox() |>
   sf::st_as_sfc()
 ```
-```{r eval=FALSE}
-nativeLandWI <- sf::st_intersection(nativeLandData, bbox_wi_sf)
+
+```{r}
+ggplot2::ggplot() +
+  ggplot2::geom_sf(data = bbox_mnwimi_sf)
 ```
 
-```{r eval=FALSE, warning = FALSE}
-landMaps::ggplot_sf() +
-  landMaps:::ggplot_layer_sf(dplyr::filter(census_geometry, geography == "states", NAME %in% c("Wisconsin", "Minnesota", "Michigan"))) +
-  landMaps::ggplot_nativeLand(nativeLandWI) +
-  ggplot2::coord_sf(xlim = bbox_wi[c("xmin","xmax")],
-                    ylim = bbox_wi[c("ymin","ymax")])
+```{r warning=FALSE}
+nl_bbox_mnwimi <- list()
+for(i in seq_len(nrow(nativeLandData))) {
+  nl_bbox_mnwimi[[i]] <- tryCatch(
+    sf::st_intersection(nativeLandData[i,], bbox_mnwimi_sf),
+    error = function(e) NA)
+}
+nl_bbox_mnwimi <- dplyr::bind_rows(
+  nl_bbox_mnwimi[!is.na(nl_bbox_mnwimi)])
+table(nl_bbox_mnwimi$category)
+```
 
+```{r warning = FALSE}
+landMaps::ggplot_sf() +
+  landMaps::ggplot_nativeLand(nl_bbox_mnwimi,
+                              title = "Native Land in MN/WI/MI") +
+  landMaps:::ggplot_layer_sf(dplyr::filter(census_geometry, geography == "states", NAME %in% c("Wisconsin", "Minnesota", "Michigan")), color = "black") +
+  ggplot2::facet_wrap(~ category)
+```
+
+```{r warning = FALSE}
+landMaps::ggplot_sf() +
+  landMaps::ggplot_nativeLand(
+    dplyr::filter(nl_bbox_mnwimi, category == "territories"),
+    title = "Native Land in MN/WI/MI") +
+  landMaps:::ggplot_layer_sf(dplyr::filter(census_geometry, geography == "states", NAME %in% c("Wisconsin", "Minnesota", "Michigan")), color = "black")
+```
+
+```{r warning=FALSE}
+nl_mnwimi <- list()
+for(i in seq_len(nrow(nativeLandData))) {
+  nl_mnwimi[[i]] <- tryCatch(
+    sf::st_intersection(nativeLandData[i,], census_mnwimi),
+    error = function(e) NA)
+}
+nl_mnwimi <- dplyr::bind_rows(nl_mnwimi[!is.na(nl_mnwimi)])
+table(nl_mnwimi$category)
+```
+
+```{r warning = FALSE}
+landMaps::ggplot_sf() +
+  landMaps::ggplot_nativeLand(nl_mnwimi,
+                              title = "Native Land in MN/WI/MI") +
+  landMaps:::ggplot_layer_sf(dplyr::filter(census_geometry, geography == "states", NAME %in% c("Wisconsin", "Minnesota", "Michigan")), color = "red") +
+  ggplot2::facet_wrap(~ category)
+```
+
+
+```{r warning = FALSE}
+landMaps::ggplot_sf() +
+  landMaps::ggplot_nativeLand(nl_mnwimi) +
+  landMaps:::ggplot_layer_sf(dplyr::filter(census_geometry, geography == "states", NAME %in% c("Wisconsin", "Minnesota", "Michigan")), color = "red") +
+  ggplot2::facet_wrap(~ category)
 ```
 
 The list below was done by hand using `native-land.ca`.

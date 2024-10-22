@@ -8,7 +8,7 @@
 #'             theme_minimal xlab ylab
 #' @importFrom ggrepel geom_text_repel
 #' @importFrom rlang .data
-ggplot_sf <- function(legend.position = "bottom") {
+ggplot_sf <- function(legend.position = "none") {
   # Minimal theme, bottom legend.
   ggplot2::ggplot() +
     ggplot2::xlab("Longitude") +
@@ -31,13 +31,17 @@ ggplot_layer_sf <- function(object,
                             color = "black", fill = "transparent",
                             linewidth = 0.5,
                             ...) {
-    list(
-      ggplot2::geom_sf(
-        data = object,
-        color = color, fill = fill, linewidth = linewidth,
-        inherit.aes = FALSE, ...),
-      ggplot2::theme(
-        axis.text.x = ggplot2::element_text(angle = 30, vjust = 0.5, hjust=1)))
+  if(is.null(object$color))
+    object$color <- color
+  list(
+    ggplot2::geom_sf(
+      data = object,
+      ggplot2::aes(color = .data$color),
+      fill = fill,
+      linewidth = linewidth,
+      inherit.aes = FALSE, ...),
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(angle = 30, vjust = 0.5, hjust=1)))
 }
 #' Simple feature ggplot geom_text_reple label layer
 #'

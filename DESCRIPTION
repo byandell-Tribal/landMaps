@@ -1,6 +1,6 @@
 Package: landMaps
-Version: 0.3.1
-Date: 2024-10-17
+Version: 0.3.2
+Date: 2024-10-22
 Title: Maps of land boundaries
 Description: Tools to study native land data
 Authors@R: c(person("Brian S Yandell",
