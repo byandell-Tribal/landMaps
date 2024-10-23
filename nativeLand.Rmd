@@ -132,6 +132,15 @@ landMaps::ggplot_sf(legend.position = "right") +
 
 ```{r}
 landMaps::ggplot_sf() + 
+  # Base map from OpenStreetMap
+  ggspatial::annotation_map_tile(type = "osm", zoom = 14,
+                                 progress = "none") +
+  landMaps::ggplot_nativeLand(oceti_sakowin,
+                              title = "Oceti Sakowin")
+```
+
+```{r}
+landMaps::ggplot_sf() + 
   landMaps::ggplot_nativeLand(oceti_sakowin) +
   ggplot2::facet_wrap(~ category)
 ```
@@ -143,8 +152,19 @@ menominee <- dplyr::filter(nativeLandData,
                            grepl("menominee", Slug))
 ```
 
-```{r}
-landMaps::ggplot_sf() + landMaps::ggplot_nativeLand(menominee)
+```{r warning=FALSE}
+landMaps::ggplot_sf() +
+  landMaps::ggplot_nativeLand(menominee)
+```
+
+The following does not work yet. Not sure why.
+
+```{r warning=FALSE, eval=FALSE}
+landMaps::ggplot_sf() +
+  # Base map from OpenStreetMap
+  ggspatial::annotation_map_tile(type = "osm", zoom = 14,
+                                 progress = "none") +
+  landMaps::ggplot_nativeLand(menominee)
 ```
 
 ### Direct request
