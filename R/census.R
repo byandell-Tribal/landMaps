@@ -4,9 +4,11 @@
 #' @return reactive server
 #' @export
 #' @rdname census
-#' @importFrom shiny a bootstrapPage checkboxInput h2 moduleServer NS
-#'             plotOutput renderPlot renderUI selectInput shinyApp sliderInput
-#'             uiOutput
+#' @importFrom shiny a checkboxInput column fluidPage mainPanel moduleServer NS
+#'             plotOutput renderPlot renderUI selectInput selectizeInput
+#'             shinyApp sidebarLayout sidebarPanel sliderInput tagList
+#'             titlePanel uiOutput updateSelectizeInput
+#' @importFrom stringr str_detect
 censusServer <- function(id) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
@@ -16,9 +18,21 @@ censusServer <- function(id) {
                             geography, NAME, sep = ": ")
     output$catname <- shiny::renderUI({
       shiny::selectizeInput(ns("catname"), "Select Geography, Name:",
-                            cenfest$catname,
+                            NULL,
                             multiple = TRUE)
     })
+    catnames <- shiny::reactive({
+      shiny::req(input$category)
+      cenfest$catname[stringr::str_detect(cenfest$catname,
+        paste0("^", paste(input$category, collapse = "|")))]
+    })
+    shiny::observeEvent(
+      shiny::req(catnames()), {
+        shiny::updateSelectizeInput(session, "catname", choices = catnames(),
+                                    server = TRUE, selected = input$catname)
+      },
+      ignoreNULL = FALSE, label = "update_catname")
+    
     
     places <- shiny::reactive({
       shiny::req(input$catname)
@@ -41,8 +55,12 @@ censusInput <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::h2("Census Maps"),
-    shiny::uiOutput(ns("catname"))
-  )
+    shiny::fluidRow(
+      shiny::column(4, 
+        shiny::selectInput(ns("category"), "Select Category(s):", 
+                           c("aiannh", "states", "counties"),
+                           multiple = TRUE)),
+      shiny::column(8, shiny::uiOutput(ns("catname")))))
 }
 #' Shiny Module Output for census
 #' @param id identifier for shiny reactive
@@ -59,10 +77,21 @@ censusOutput <- function(id) {
 #' @export
 censusApp <- function() {
   
-  ui <- shiny::bootstrapPage(
-    censusInput("census"), 
-    censusOutput("census"),
-  )
+  ui <- function() {
+    shiny::fluidPage(
+      shiny::titlePanel("Census Units"),
+      shiny::sidebarLayout(
+        shiny::sidebarPanel(
+          shiny::tagList(
+            censusInput("census"),
+            "Currently adds one at a time.",
+            "Could have buttons to add all counties and/or aiannh in states at once.")
+        ),
+        shiny::mainPanel(
+          censusOutput("census"))
+      )
+    )
+  }
   server <- function(input, output, session) {
     censusServer("census")
   }

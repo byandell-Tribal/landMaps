@@ -4,8 +4,8 @@
 #'
 #' @return gg plot object
 #' @export
-#' @importFrom ggplot2 aes element_text geom_sf geom_sf_label ggplot labs theme
-#'             theme_minimal xlab ylab
+#' @importFrom ggplot2 aes element_text geom_sf geom_sf_label ggplot labs
+#'             scale_color_manual theme theme_minimal xlab ylab
 #' @importFrom ggrepel geom_text_repel
 #' @importFrom rlang .data
 ggplot_sf <- function(legend.position = "none") {
@@ -31,8 +31,13 @@ ggplot_layer_sf <- function(object,
                             color = "black", fill = "transparent",
                             linewidth = 0.5,
                             ...) {
+  # Set up colors. See ggplot_nativeLand for another approach if legend desired.
   if(is.null(object$color))
     object$color <- color
+  colors <- unique(object$color)
+  names(colors) <- colors
+  
+  # List of ggplot2 objects for `+` addition.
   list(
     ggplot2::geom_sf(
       data = object,
@@ -40,6 +45,7 @@ ggplot_layer_sf <- function(object,
       fill = fill,
       linewidth = linewidth,
       inherit.aes = FALSE, ...),
+    ggplot2::scale_color_manual(values = colors),
     ggplot2::theme(
       axis.text.x = ggplot2::element_text(angle = 30, vjust = 0.5, hjust=1)))
 }

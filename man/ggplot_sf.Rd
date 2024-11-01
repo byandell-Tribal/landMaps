@@ -6,7 +6,7 @@
 \alias{ggplot_layer_name}
 \title{Simple feature ggplot wrapper}
 \usage{
-ggplot_sf(legend.position = "bottom")
+ggplot_sf(legend.position = "none")
 
 ggplot_layer_sf(
   object,
