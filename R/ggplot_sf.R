@@ -31,6 +31,8 @@ ggplot_layer_sf <- function(object,
                             color = "black", fill = "transparent",
                             linewidth = 0.5,
                             ...) {
+  if(is.null(object) || !nrow(object)) return(NULL)
+  
   # Set up colors. See ggplot_nativeLand for another approach if legend desired.
   if(is.null(object$color))
     object$color <- color
@@ -47,7 +49,7 @@ ggplot_layer_sf <- function(object,
       inherit.aes = FALSE, ...),
     ggplot2::scale_color_manual(values = colors),
     ggplot2::theme(
-      axis.text.x = ggplot2::element_text(angle = 30, vjust = 0.5, hjust=1)))
+      axis.text.x = ggplot2::element_text(angle = 20, vjust = 0.5, hjust=1)))
 }
 #' Simple feature ggplot geom_text_reple label layer
 #'
