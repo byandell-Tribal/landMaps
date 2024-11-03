@@ -29,8 +29,8 @@ ggplot_nativeLand <- function(object,
   object$Name <- scale_names
   
   title_names <- paste(scale_names, collapse = ", ")
-  names(colors) <- scale_names
-  object$color <- scale_names
+  names(colors) <- colors
+  object$color <- colors
   
   # p is a list of ggplot2 components.
   p <- list(

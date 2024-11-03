@@ -82,11 +82,12 @@ censusServer <- function(id) {
       }
     })
     
-    # Output Main Plot
-    output$main_plot <- shiny::renderPlot({
+    # gg_plot
+    shiny::reactive({
       if(shiny::isTruthy(places())) {
-        print(ggplot_sf() + 
-                landMaps:::ggplot_layer_sf(places()))
+        landMaps:::ggplot_layer_sf(places())
+      } else {
+        NULL
       }
     })
   })
@@ -137,12 +138,14 @@ censusApp <- function() {
             censusInput("census"))
         ),
         shiny::mainPanel(
-          censusOutput("census"))
+          landPlotOutput("landPlot")
+        )
       )
     )
   }
   server <- function(input, output, session) {
-    censusServer("census")
+    gg_plot <- censusServer("census")
+    landPlotServer("landPlot", gg_plot)
   }
   shiny::shinyApp(ui, server)
 }

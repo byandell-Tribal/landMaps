@@ -35,11 +35,10 @@ nativeLandServer <- function(id) {
       get_nativeLand(category, name, input$password, slug)
     })
     
-    # Output Main Plot
-    output$main_plot <- shiny::renderPlot({
-      print(ggplot_sf() + 
-              ggplot_nativeLand(tribes()) +
-              ggplot2::facet_wrap(~ .data$category))
+    # gg_plot
+    shiny::reactive({
+      list(ggplot_nativeLand(tribes()),
+           ggplot2::facet_wrap(~ .data$category))
     })
   })
 }
@@ -73,10 +72,11 @@ nativeLandApp <- function() {
   
   ui <- shiny::bootstrapPage(
     nativeLandInput("nativeLand"), 
-    nativeLandOutput("nativeLand"),
+    landPlotOutput("landPlot"),
   )
   server <- function(input, output, session) {
-    nativeLandServer("nativeLand")
+    gg_plot <- nativeLandServer("nativeLand")
+    landPlotServer("landPlot", gg_plot)
   }
   shiny::shinyApp(ui, server)
 }
