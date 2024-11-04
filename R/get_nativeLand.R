@@ -17,16 +17,17 @@ get_nativeLand <- function(
     key = NULL,
     slug = NULL) {
   
+  if(length(categories) != length(name)) {
+    if(length(categories) == 1) categories <- rep(categories, length(name))
+  }
   # Lookup `name` from `slug`.
   # Otherwise `name` must be exact match.
   if(!is.null(slug)) {
-    name <- dplyr::filter(
-      slug,
-      grepl(paste(name, collapse = "|"), .data$Slug),
-      grepl(paste(categories, collapse = "|"), .data$category))$Slug
-  }
-  if(length(categories) != length(name)) {
-    if(length(categories) == 1) categories <- rep(categories, length(name))
+    for(i in seq_along(name)) {
+      name[i] <- dplyr::filter(slug,
+        .data$category == categories[i],
+        grepl(tolower(name[i]), .data$Slug))$Slug
+    }
   }
   out <- list()
   for(i in seq_along(name)) {

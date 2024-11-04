@@ -6,7 +6,7 @@
 #' @rdname census
 #' @importFrom shiny a checkboxInput column fluidPage mainPanel moduleServer NS
 #'             plotOutput renderPlot renderUI selectInput selectizeInput
-#'             shinyApp sidebarLayout sidebarPanel sliderInput tagList
+#'             shinyApp sidebarPanel sidebarPanel sliderInput tagList
 #'             titlePanel uiOutput updateSelectizeInput
 #' @importFrom stringr str_detect
 #' @importFrom dplyr arrange
@@ -83,12 +83,23 @@ censusServer <- function(id) {
     })
     
     # gg_plot
-    shiny::reactive({
+    gg_plot <- shiny::reactive({
       if(shiny::isTruthy(places())) {
         landMaps:::ggplot_layer_sf(places())
       } else {
         NULL
       }
+    })
+    color <- shiny::reactive({
+      if(shiny::isTruthy(places())) {
+        unique(places()$color)
+      } else {
+        NULL
+      }
+    })
+    ################################
+    shiny::reactive({
+      list(gg_plot = gg_plot(), color = color())
     })
   })
 }
@@ -128,24 +139,27 @@ censusOutput <- function(id) {
 #' @rdname census
 #' @export
 censusApp <- function() {
-  
-  ui <- function() {
-    shiny::fluidPage(
-      shiny::titlePanel("Census Shapefiles"),
-      shiny::sidebarLayout(
-        shiny::sidebarPanel(
-          shiny::tagList(
-            censusInput("census"))
-        ),
-        shiny::mainPanel(
-          landPlotOutput("landPlot")
-        )
+  ui <- shiny::fluidPage(
+    shiny::titlePanel("Census Shapefiles"),
+    shiny::sidebarPanel(
+      shiny::sidebarPanel(
+        censusInput("census"),
+        landPlotInput("landPlot")
+      ),
+      shiny::mainPanel(
+        landPlotOutput("landPlot")
       )
     )
-  }
+  )
   server <- function(input, output, session) {
-    gg_plot <- censusServer("census")
-    landPlotServer("landPlot", gg_plot)
+    gg_census <- censusServer("census")
+    gg_object <- shiny::reactive({
+      gg_census()$gg_plot
+    })
+    color <- shiny::reactive({
+      gg_census()$color
+    })
+    landPlotServer("landPlot", gg_object, color)
   }
   shiny::shinyApp(ui, server)
 }

@@ -1,6 +1,7 @@
 #' Simple feature ggplot wrapper
 #'
 #' @param legend.position position of legend (default "bottom")
+#' @param color scale color if not `NULL`
 #'
 #' @return gg plot object
 #' @export
@@ -8,14 +9,23 @@
 #'             scale_color_manual theme theme_minimal xlab ylab
 #' @importFrom ggrepel geom_text_repel
 #' @importFrom rlang .data
-ggplot_sf <- function(legend.position = "none") {
+ggplot_sf <- function(legend.position = "none",
+                      color = c("grey", "black", "red")) {
   # Minimal theme, bottom legend.
-  ggplot2::ggplot() +
+  out <- ggplot2::ggplot() +
     ggplot2::xlab("Longitude") +
     ggplot2::ylab("Latitude") +
     ggplot2::theme_minimal() +
     ggplot2::theme(legend.position = legend.position) +
     ggplot2::theme(strip.text.x = ggplot2::element_text(size = 10))
+  if(!is.null(color) && length(color)) {
+    # Name color by their value if not provided.
+    if(is.null(names(color)))
+      names(color) <- color
+    out <- out +
+      ggplot2::scale_color_manual(values = color)
+  }
+  out 
 }
 #' Simple feature ggplot geom_sf layer
 #'
@@ -33,11 +43,9 @@ ggplot_layer_sf <- function(object,
                             ...) {
   if(is.null(object) || !nrow(object)) return(NULL)
   
-  # Set up colors. See ggplot_nativeLand for another approach if legend desired.
+  # Set up color. See ggplot_nativeLand for another approach if legend desired.
   if(is.null(object$color))
     object$color <- color
-  colors <- unique(object$color)
-  names(colors) <- colors
   
   # List of ggplot2 objects for `+` addition.
   list(
@@ -47,7 +55,6 @@ ggplot_layer_sf <- function(object,
       fill = fill,
       linewidth = linewidth,
       inherit.aes = FALSE, ...),
-    ggplot2::scale_color_manual(values = colors),
     ggplot2::theme(
       axis.text.x = ggplot2::element_text(angle = 20, vjust = 0.5, hjust=1)))
 }

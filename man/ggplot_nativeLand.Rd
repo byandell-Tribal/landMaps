@@ -4,12 +4,12 @@
 \alias{ggplot_nativeLand}
 \title{ggplot of nativeLand data}
 \usage{
-ggplot_nativeLand(object, colors = NULL, title = title_names, label = TRUE)
+ggplot_nativeLand(object, color = NULL, title = title_names, label = TRUE)
 }
 \arguments{
 \item{object}{simple features object}
 
-\item{colors}{vector of colors}
+\item{color}{vector of color}
 
 \item{title}{character string}
 

@@ -247,6 +247,28 @@ landMaps::ggplot_sf() +
   landMaps:::ggplot_layer_sf(dplyr::filter(census_geometry, geography == "states", NAME %in% c("Wisconsin", "Minnesota", "Michigan")), color = "black")
 ```
 
+```{r}
+census_geometry <- readRDS("data/census_geometry.rds")
+```
+
+### Attempt at intersection subset not working.
+```{r}
+if(file.exists(filename <- "data/NativeLandUS.rds")) {
+  nativeLandUS <- readRDS(filename)
+} else {
+  nativeLandUS <- landMaps:::nativeLand_us(nativeLandData, census_geometry)
+  saveRDS(nativeLandUS, "data/nativeLandUS.rds")
+}
+```
+
+```{r}
+ggplot_sf(color = unique(nativeLandUS$color)) + 
+  ggplot_nativeLand(dplyr::filter(nativeLandUS, category == "territories"),
+                                  label = FALSE)
+```
+
+## Working stuff
+
 ```{r warning=FALSE}
 nl_mnwimi <- list()
 for(i in seq_len(nrow(nativeLandData))) {

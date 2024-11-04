@@ -2,11 +2,18 @@
 % Please edit documentation in R/landPlot.R
 \name{landPlotServer}
 \alias{landPlotServer}
+\alias{landPlotInput}
 \alias{landPlotOutput}
 \alias{landPlotApp}
 \title{Shiny Server for landPlot Example}
 \usage{
-landPlotServer(id, gg_object = shiny::reactive(NULL))
+landPlotServer(
+  id,
+  gg_object = shiny::reactive(NULL),
+  color = shiny::reactive(NULL)
+)
+
+landPlotInput(id)
 
 landPlotOutput(id)
 
@@ -15,7 +22,7 @@ landPlotApp()
 \arguments{
 \item{id}{identifier for shiny reactive}
 
-\item{gg_object}{reactive gg object}
+\item{gg_object, color}{reactive objects}
 
 \item{input, output, session}{shiny server reactives}
 }
@@ -25,9 +32,13 @@ reactive server
 nothing returned
 
 nothing returned
+
+nothing returned
 }
 \description{
 Shiny Server for landPlot Example
+
+Shiny Module Input for landPlot
 
 Shiny Module Output for landPlot
 
