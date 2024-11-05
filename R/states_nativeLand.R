@@ -16,7 +16,7 @@ states_nativeLand <- function(census_sf, nativeLand_sf,
     return(NULL)
   
   # Filter only `states`.
-  census_sf <- dplyr::filter(census_sf, .data$geography == "states")
+  census_sf <- dplyr::filter(census_sf, .data$category == "states")
   
   # Filter `nativeLand_sf` by `catname` = `category, Slug`
   nativeLand_sf <- dplyr::select(
@@ -30,7 +30,7 @@ states_nativeLand <- function(census_sf, nativeLand_sf,
   # Reduce `census_sf` by intersection with `nativeLand_sf`.
   out <- intersect_sf(census_sf, nativeLand_sf)
   if(overlap) {
-    out <- dplyr::filter(census_sf, .data$NAME %in% out$NAME)
+    out <- dplyr::filter(census_sf, .data$Name %in% out$Name)
   }
   out
 }

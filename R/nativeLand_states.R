@@ -18,7 +18,7 @@ nativeLand_states <- function(nativeLand_sf, census_sf,
   state_names <- array(state.name, dimnames = list(state.abb))
   census_sf <- dplyr::select(
     dplyr::filter(census_sf,
-      .data$geography == "states", .data$NAME %in% state_names[states]),
+      .data$category == "states", .data$Name %in% state_names[states]),
     -color)
   nativeLand_sf <- dplyr::filter(nativeLand_sf,
     .data$category %in% categories)
@@ -44,7 +44,7 @@ nativeLand_us <- function(object, census_sf) {
 }
 union_us <- function(census_geometry) {
   us <- sf::st_union(
-    dplyr::filter(census_geometry, .data$geography == "states"))
+    dplyr::filter(census_geometry, .data$category == "states"))
   sf::st_sf(us)
 }
 # Reduce `result_sf` by intersection with `land_sf`.

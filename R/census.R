@@ -9,16 +9,16 @@
 #'             shinyApp sidebarPanel sidebarPanel sliderInput tagList
 #'             titlePanel uiOutput updateSelectizeInput
 #' @importFrom stringr str_detect
-#' @importFrom dplyr arrange
+#' @importFrom dplyr arrange filter
 censusServer <- function(id) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
     census_geometry <- readRDS("data/census_geometry.rds")
     census_names <- tidyr::unite(census_geometry, catname, 
-                                 geography, NAME, sep = ": ")$catname
+                                 category, Name, sep = ": ")$catname
     output$catname <- shiny::renderUI({
-      shiny::selectizeInput(ns("catname"), "Name in Geography:", NULL)
+      shiny::selectizeInput(ns("catname"), "Name in category:", NULL)
     })
     
     aiannh_states <- shiny::reactive({
@@ -29,7 +29,7 @@ censusServer <- function(id) {
         stringr::str_detect(census_names,
           paste0(", (|[A-Z]+--)", paste(input$aiannh_states, collapse = "|"),
                  "(|--[A-Z]+)$")) &
-        census_geometry$geography == "aiannh"]
+        census_geometry$category == "aiannh"]
     })
     output$aiannh_states <- shiny::renderUI({
       shiny::selectInput(ns("aiannh_states"), "AIANNH in States:", 
@@ -45,7 +45,7 @@ censusServer <- function(id) {
       census_names[
         stringr::str_detect(census_names, paste0(", ", 
           paste(state_names[input$county_states], collapse = "|"), "$")) &
-          census_geometry$geography == "counties"]
+          census_geometry$category == "counties"]
     })
     output$county_states <- shiny::renderUI({
       shiny::selectInput(ns("county_states"), "Counties in States:", 
@@ -65,39 +65,21 @@ censusServer <- function(id) {
       },
       ignoreNULL = FALSE, label = "update_catname")
     
-    
-    places <- shiny::reactive({
+    # places
+    shiny::reactive({
       place_names <- unique(c(input$catname,
                               paste("states:", state_names[input$county_states]),
                               paste("states:", state_names[input$aiannh_states]),
                               county_states(), aiannh_states()))
       if(length(place_names)) {
-        dplyr::arrange(
-          census_geometry[which(census_names %in% place_names),],
-          .data$geography)
+        dplyr::select(
+          dplyr::arrange(
+            census_geometry[which(census_names %in% place_names),],
+              .data$category),
+          category, Name, color, geometry)
       } else {
         NULL
       }
-    })
-    
-    # gg_plot
-    gg_plot <- shiny::reactive({
-      if(shiny::isTruthy(places())) {
-        landMaps:::ggplot_layer_sf(places())
-      } else {
-        NULL
-      }
-    })
-    color <- shiny::reactive({
-      if(shiny::isTruthy(places())) {
-        unique(places()$color)
-      } else {
-        NULL
-      }
-    })
-    ################################
-    shiny::reactive({
-      list(gg_plot = gg_plot(), color = color())
     })
   })
 }
@@ -112,7 +94,7 @@ censusInput <- function(id) {
     shiny::h4("Census Maps"),
     shiny::fluidRow(
       shiny::column(4, 
-        shiny::selectInput(ns("category"), "Geography:", 
+        shiny::selectInput(ns("category"), "Category:", 
                            c("aiannh", "states", "counties"),
                            multiple = TRUE)),
       shiny::column(8, shiny::uiOutput(ns("catname")))
@@ -138,26 +120,18 @@ censusOutput <- function(id) {
 #' @export
 censusApp <- function() {
   ui <- shiny::fluidPage(
-    shiny::titlePanel("Census Shapefiles"),
+    shiny::titlePanel("Census Maps"),
     shiny::sidebarPanel(
-      shiny::sidebarPanel(
-        censusInput("census"),
-        landPlotInput("landPlot")
-      ),
-      shiny::mainPanel(
-        landPlotOutput("landPlot")
-      )
+      censusInput("census"),
+      landPlotInput("landPlot")
+    ),
+    shiny::mainPanel(
+      landPlotOutput("landPlot")
     )
   )
   server <- function(input, output, session) {
-    gg_census <- censusServer("census")
-    gg_object <- shiny::reactive({
-      gg_census()$gg_plot
-    })
-    color <- shiny::reactive({
-      gg_census()$color
-    })
-    landPlotServer("landPlot", gg_object, color)
+    census_places <- censusServer("census")
+    landPlotServer("landPlot", census_places)
   }
   shiny::shinyApp(ui, server)
 }

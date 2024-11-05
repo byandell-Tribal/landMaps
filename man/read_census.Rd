@@ -13,5 +13,6 @@ read_census(geography)
 simple feature object
 }
 \description{
-Read census geometry
+Note that `geography` and `NAME` will be renamed in saved objects
+as `category` and `Name`, respectively, to agree with Native Land names.
 }

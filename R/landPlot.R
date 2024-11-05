@@ -1,7 +1,7 @@
 #' Shiny Server for landPlot Example
 #'
 #' @param id shiny identifier
-#' @param gg_object,color reactive objects
+#' @param places reactive object with places
 #' @param input,output,session shiny server reactives
 #' @return reactive server
 #' @export
@@ -10,8 +10,7 @@
 #'             moduleServer NS plotOutput reactive renderPlot sliderInput
 #'             sidebarPanel titlePanel uiOutput
 #' @importFrom ggspatial annotation_map_tile
-landPlotServer <- function(id, gg_object = shiny::reactive(NULL),
-                           color = shiny::reactive(NULL)) {
+landPlotServer <- function(id, places = shiny::reactive(NULL)) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
@@ -27,16 +26,17 @@ landPlotServer <- function(id, gg_object = shiny::reactive(NULL),
 
     # Output Main Plot
     output$main_plot <- shiny::renderPlot({
-      out <- ggplot_sf(color = color())
-      if(shiny::isTruthy(gg_object()) && !all(sapply(gg_object(), is.null))) {
+      if(shiny::isTruthy(places()) && nrow(places())) {
+        out <- ggplot_sf(color = unique(places()$color))
         if(shiny::isTruthy(input$osm_zoom) & shiny::isTruthy(input$osm)) {
           # Base map from OpenStreetMap
           out <- out +
             ggspatial::annotation_map_tile(type = "osm", zoomin = input$osm_zoom,
                                            progress = "none")
         }
-        out <- out + gg_object()
-        print(out)
+        print(out + ggplot_layer_sf(places()))
+      } else {
+        NULL
       }
     })
     output$show_plot <- shiny::renderUI({
@@ -86,16 +86,16 @@ landPlotApp <- function() {
     )
   ) 
   server <- function(input, output, session) {
-    gg_census <- censusServer("census")
-    gg_nativeLand <- nativeLandServer("nativeLand")
-    # Better to do this with `...`
-    gg_object <- shiny::reactive({
-      list(gg_census()$gg_plot, gg_nativeLand()$gg_plot)
+    census_places <- censusServer("census")
+    nativeLand_places <- nativeLandServer("nativeLand")
+
+    places <- shiny::reactive({
+      out <- dplyr::bind_rows(census_places(), nativeLand_places())
+      # Remove possible duplication places by `Name`.
+      out[!duplicated(out$Name),]
     })
-    color <- shiny::reactive({
-      unique(c(gg_census()$color, gg_nativeLand()$color))
-    })
-    landPlotServer("landPlot", gg_object, color)
+
+    landPlotServer("landPlot", places)
   }
   shiny::shinyApp(ui, server)
 }

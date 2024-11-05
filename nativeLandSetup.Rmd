@@ -43,6 +43,9 @@ This object is **NOT** used in the package, nor is it
 saved to
 [github](https://github.com/byandell-Tribal/nativeLand).
 
+The following reads all Native land features and
+organizes them into `category`.
+
 ```{r}
 if(file.exists(filename <- "data/NativeLandData.rds")) {
   nativeLandData <- readRDS(filename)

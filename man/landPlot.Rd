@@ -7,11 +7,7 @@
 \alias{landPlotApp}
 \title{Shiny Server for landPlot Example}
 \usage{
-landPlotServer(
-  id,
-  gg_object = shiny::reactive(NULL),
-  color = shiny::reactive(NULL)
-)
+landPlotServer(id, places = shiny::reactive(NULL))
 
 landPlotInput(id)
 
@@ -22,7 +18,7 @@ landPlotApp()
 \arguments{
 \item{id}{identifier for shiny reactive}
 
-\item{gg_object, color}{reactive objects}
+\item{places}{reactive object with places}
 
 \item{input, output, session}{shiny server reactives}
 }

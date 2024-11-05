@@ -1,5 +1,8 @@
 #' Read census geometry
 #'
+#' Note that `geography` and `NAME` will be renamed in saved objects
+#' as `category` and `Name`, respectively, to agree with Native Land names.
+#' 
 #' @param geography character string 
 #'
 #' @return simple feature object

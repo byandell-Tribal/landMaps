@@ -8,6 +8,7 @@
 #'             mainPanel moduleServer NS plotOutput renderPlot renderUI
 #'             selectInput shinyApp sidebarPanel sliderInput titlePanel uiOutput
 #' @importFrom ggplot2 facet_wrap
+#' @importFrom dplyr bind_rows distinct filter
 nativeLandServer <- function(id) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
@@ -52,54 +53,44 @@ nativeLandServer <- function(id) {
         return(NULL)
       shiny::req(input$catname, input$password, cat_places())
       # Limit to territories for now.
-      states_nativeLand(census_geometry, cat_places(), input$catname)
+      dplyr::select(
+        states_nativeLand(census_geometry, cat_places(), input$catname),
+        category, Name, color, geometry)
     })
     
     cat_places <- shiny::reactive({
       shiny::req(input$catname, input$password)
       category <- stringr::str_remove(input$catname, ", .*$")
       name <- stringr::str_remove(input$catname, "^.*, ")
-      get_nativeLand(category, name, input$password, slug)
+      dplyr::select(
+        get_nativeLand(category, name, input$password, slug),
+        category, Name, color, geometry)
+      
     })
-    places <- shiny::reactive({
+    
+    # places
+    shiny::reactive({
       native_places <- native_states()
       if(shiny::isTruthy(input$overlap) & shiny::isTruthy(native_places)) {
         native_places <- dplyr::filter(
           nativeLandUS, .data$Slug %in% native_places$Slug)
       }
+      if(!is.null(native_places)) {
+        native_places <- dplyr::select(native_places,
+                                       category, Name, color, geometry)
+      }
       if(shiny::isTruthy(input$catname)) {
-        dplyr::bind_rows(cat_places(), native_places)
-      } else
-        native_places
-    })
-    
-    gg_plot <- shiny::reactive({
-      if(shiny::isTruthy(places()) && nrow(places())) {
-        out <- ggplot_nativeLand(places(), title = "", label = FALSE)
-        # Add `states` overlapping with Native lands.
-        if(shiny::isTruthy(input$catstate) &&
-           shiny::isTruthy(state_natives()) &&
-           nrow(state_natives())) {
-          out <- list(out,
-                      landMaps:::ggplot_layer_sf(state_natives()))
-        }
-        out
-      } else {
-        NULL
+        native_places <- dplyr::bind_rows(cat_places(), native_places)
       }
-    })
-    color <- shiny::reactive({
-      if(shiny::isTruthy(input$catname) | shiny::isTruthy(input$native_states)) {
-        unique(places()$color)
-      } else {
-        NULL
+      if(shiny::isTruthy(input$catstate) &&
+         shiny::isTruthy(state_natives()) &&
+         nrow(state_natives())) {
+        native_places <- dplyr::bind_rows(state_places, native_places)
       }
+      # Remove possible duplication of Native places.
+      place_names <- native_places$Name
+      native_places[!duplicated(place_names),]
     })
-    ################################
-    shiny::reactive({
-      list(gg_plot = gg_plot(), color = color())
-    })
-    
   })
 }
 #' Shiny Module Input for nativeLand
@@ -137,7 +128,7 @@ nativeLandOutput <- function(id) {
 #' @export
 nativeLandApp <- function() {
   ui <- shiny::fluidPage(
-    shiny::titlePanel("Land Shapefiles"),
+    shiny::titlePanel("Land Maps"),
     shiny::sidebarPanel(
       nativeLandInput("nativeLand"),
       landPlotInput("landPlot")
@@ -147,14 +138,8 @@ nativeLandApp <- function() {
     )
   ) 
   server <- function(input, output, session) {
-    gg_nativeLand <- nativeLandServer("nativeLand")
-    gg_object <- shiny::reactive({
-      gg_nativeLand()$gg_plot
-    })
-    color <- shiny::reactive({
-      gg_nativeLand()$color
-    })
-    landPlotServer("landPlot", gg_object, color)
+    nativeLand_places <- nativeLandServer("nativeLand")
+    landPlotServer("landPlot", nativeLand_places)
   }
   shiny::shinyApp(ui, server)
 }

@@ -44,9 +44,9 @@ if(file.exists(filename <- "data/census_geometry.rds")) {
           aiannh = aiannh,
           states = states,
           counties = counties,
-          .id = "geography")))
+          .id = "category")))
   census_geometry <- dplyr::mutate(census_geometry,
-      geography = factor(.data$geography, c("counties", "states", "aiannh")))
+      category = factor(.data$category, c("counties", "states", "aiannh")))
 
   saveRDS(census_geometry, filename)
 }

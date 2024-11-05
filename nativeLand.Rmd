@@ -165,14 +165,14 @@ census_geometry <- readRDS("data/census_geometry.rds")
 ```{r}
 census_mnwimi <- dplyr::filter(
   census_geometry,
-  geography == "states",
-  NAME %in% c("Wisconsin", "Minnesota", "Michigan"))
+  category == "states",
+  Name %in% c("Wisconsin", "Minnesota", "Michigan"))
 ```
 
 ```{r}
 bbox_mnwimi <- sf::st_bbox(
-  dplyr::filter(census_geometry, geography == "states",
-                NAME %in% c("Wisconsin", "Minnesota", "Michigan")))
+  dplyr::filter(census_geometry, category == "states",
+                Name %in% c("Wisconsin", "Minnesota", "Michigan")))
 bbox_mnwimi_sf <- tibble::tibble(x = bbox_wi[c("xmin","xmax")],
                      y = bbox_wi[c("ymin","ymax")]) |> 
   sf::st_as_sf(coords = c("x", "y")) |> 
@@ -203,7 +203,10 @@ table(nl_bbox_mnwimi$category)
 landMaps::ggplot_sf() +
   landMaps::ggplot_nativeLand(nl_bbox_mnwimi,
                               title = "Native Land in MN/WI/MI") +
-  landMaps:::ggplot_layer_sf(dplyr::filter(census_geometry, geography == "states", NAME %in% c("Wisconsin", "Minnesota", "Michigan")), color = "black") +
+  landMaps:::ggplot_layer_sf(
+    dplyr::filter(census_geometry, category == "states",
+                  Name %in% c("Wisconsin", "Minnesota", "Michigan")),
+    color = "black") +
   ggplot2::facet_wrap(~ category)
 ```
 
@@ -212,7 +215,10 @@ landMaps::ggplot_sf() +
   landMaps::ggplot_nativeLand(
     dplyr::filter(nl_bbox_mnwimi, category == "territories"),
     title = "Native Land in MN/WI/MI") +
-  landMaps:::ggplot_layer_sf(dplyr::filter(census_geometry, geography == "states", NAME %in% c("Wisconsin", "Minnesota", "Michigan")), color = "black")
+  landMaps:::ggplot_layer_sf(
+    dplyr::filter(census_geometry, category == "states",
+                  Name %in% c("Wisconsin", "Minnesota", "Michigan")),
+    color = "black")
 ```
 
 ```{r}
@@ -242,7 +248,10 @@ table(nl_mnwimi$category)
 landMaps::ggplot_sf() +
   landMaps::ggplot_nativeLand(nl_mnwimi,
                               title = "Native Land in MN/WI/MI") +
-  landMaps:::ggplot_layer_sf(dplyr::filter(census_geometry, geography == "states", NAME %in% c("Wisconsin", "Minnesota", "Michigan")), color = "red") +
+  landMaps:::ggplot_layer_sf(
+    dplyr::filter(census_geometry, category == "states",
+                  Name %in% c("Wisconsin", "Minnesota", "Michigan")),
+    color = "red") +
   ggplot2::facet_wrap(~ category)
 ```
 
@@ -250,7 +259,10 @@ landMaps::ggplot_sf() +
 ```{r warning = FALSE}
 landMaps::ggplot_sf() +
   landMaps::ggplot_nativeLand(nl_mnwimi) +
-  landMaps:::ggplot_layer_sf(dplyr::filter(census_geometry, geography == "states", NAME %in% c("Wisconsin", "Minnesota", "Michigan")), color = "red") +
+  landMaps:::ggplot_layer_sf(
+    dplyr::filter(census_geometry, category == "states",
+                  Name %in% c("Wisconsin", "Minnesota", "Michigan")),
+    color = "red") +
   ggplot2::facet_wrap(~ category)
 ```
 
@@ -273,14 +285,18 @@ nativeLandWIs$Name
 
 ```{r warning = FALSE}
 landMaps::ggplot_sf() +
-  landMaps:::ggplot_layer_sf(dplyr::filter(census_geometry, geography == "states", NAME %in% c("Wisconsin", "Minnesota", "Michigan"))) +
+  landMaps:::ggplot_layer_sf(
+    dplyr::filter(census_geometry, category == "states",
+                  Name %in% c("Wisconsin", "Minnesota", "Michigan"))) +
   landMaps::ggplot_nativeLand(nativeLandWIs,
                               title = "MN/WI/MI embedded in Native Lands")
 ```
 
 ```{r warning = FALSE}
 landMaps::ggplot_sf() +
-  landMaps:::ggplot_layer_sf(dplyr::filter(census_geometry, geography == "states", NAME %in% c("Wisconsin", "Minnesota", "Michigan"))) +
+  landMaps:::ggplot_layer_sf(
+    dplyr::filter(census_geometry, category == "states",
+                  Name %in% c("Wisconsin", "Minnesota", "Michigan"))) +
   landMaps::ggplot_nativeLand(nativeLandWIs,
                               title = "Native Lands overlapping with MN/WI/MI") +
   ggplot2::coord_sf(xlim = bbox_wi[c("xmin","xmax")],

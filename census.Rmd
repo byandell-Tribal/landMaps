@@ -24,7 +24,7 @@ census_geometry <- readRDS("data/census_geometry.rds")
 
 ```{r}
 sd <- census_geometry |>
-  dplyr::filter(geography == "states", NAME == "South Dakota")
+  dplyr::filter(category == "states", Name == "South Dakota")
 ```
 
 
@@ -44,8 +44,8 @@ sdTribes <- c("Rosebud", "Pine Ridge", "Crow Creek", "Cheyenne River",
               "Yankton", "Flandreau")
 sd_tribes <- 
   dplyr::filter(census_geometry,
-                grepl(paste(sdTribes, collapse = "|"), .data$NAME),
-                geography == "aiannh")
+                grepl(paste(sdTribes, collapse = "|"), .data$Name),
+                category == "aiannh")
 ```
 
 ```{r}
@@ -62,7 +62,7 @@ landMaps::ggplot_sf() +
   ggspatial::annotation_map_tile(type = "osm", zoomin = 0,
                                  progress = "none") +
   landMaps:::ggplot_layer_sf(
-    dplyr::filter(sd_tribes, grepl("Pine Ridge", NAME)),
+    dplyr::filter(sd_tribes, grepl("Pine Ridge", Name)),
     fill = "transparent")
 ```
 
@@ -73,7 +73,7 @@ bbox_sd_tribes <- sf::st_bbox(sd_tribes)
 ```
 
 ```{r}
-object <- dplyr::filter(census_geometry, geography == "states")
+object <- dplyr::filter(census_geometry, category == "states")
 p_states <- landMaps::ggplot_sf() +
   landMaps:::ggplot_layer_sf(object)
 ```
@@ -136,8 +136,8 @@ wiTribes <- c(
   "Bad River Reservation, WI")
 wi_tribes <- 
   dplyr::filter(census_geometry,
-                grepl(paste(wiTribes, collapse = "|"), .data$NAME),
-                geography == "aiannh")
+                grepl(paste(wiTribes, collapse = "|"), .data$Name),
+                category == "aiannh")
 ```
 
 ```{r}
@@ -148,7 +148,7 @@ landMaps::ggplot_sf() +
 ```{r}
 bbox_wi_tribes <- sf::st_bbox(wi_tribes)
 bbox_wi <- sf::st_bbox(
-  dplyr::filter(census_geometry, geography == "states", NAME == "Wisconsin"))
+  dplyr::filter(census_geometry, category == "states", Name == "Wisconsin"))
 ```
 
 ```{r}
