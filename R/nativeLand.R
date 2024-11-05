@@ -4,7 +4,7 @@
 #' @return reactive server
 #' @export
 #' @rdname nativeLand
-#' @importFrom shiny a checkboxInput column fluidPage fluidRow h2 isTruthy
+#' @importFrom shiny a checkboxInput column fluidPage fluidRow h4 isTruthy
 #'             mainPanel moduleServer NS plotOutput renderPlot renderUI
 #'             selectInput shinyApp sidebarPanel sliderInput titlePanel uiOutput
 #' @importFrom ggplot2 facet_wrap

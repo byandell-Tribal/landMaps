@@ -4,8 +4,8 @@
 #' @return reactive server
 #' @export
 #' @rdname census
-#' @importFrom shiny a checkboxInput column fluidPage mainPanel moduleServer NS
-#'             plotOutput renderPlot renderUI selectInput selectizeInput
+#' @importFrom shiny a checkboxInput column fluidPage h4 mainPanel moduleServer
+#'             NS plotOutput renderPlot renderUI selectInput selectizeInput
 #'             shinyApp sidebarPanel sidebarPanel sliderInput tagList
 #'             titlePanel uiOutput updateSelectizeInput
 #' @importFrom stringr str_detect
@@ -18,9 +18,7 @@ censusServer <- function(id) {
     census_names <- tidyr::unite(census_geometry, catname, 
                                  geography, NAME, sep = ": ")$catname
     output$catname <- shiny::renderUI({
-      shiny::selectizeInput(ns("catname"), "Name in Geography:",
-                            NULL,
-                            multiple = TRUE)
+      shiny::selectizeInput(ns("catname"), "Name in Geography:", NULL)
     })
     
     aiannh_states <- shiny::reactive({
@@ -111,7 +109,7 @@ censusServer <- function(id) {
 censusInput <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
-    shiny::h2("Census Maps"),
+    shiny::h4("Census Maps"),
     shiny::fluidRow(
       shiny::column(4, 
         shiny::selectInput(ns("category"), "Geography:", 

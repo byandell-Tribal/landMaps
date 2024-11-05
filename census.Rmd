@@ -20,6 +20,24 @@ See
 census_geometry <- readRDS("data/census_geometry.rds")
 ```
 
+## OSM on SD
+
+```{r}
+sd <- census_geometry |>
+  dplyr::filter(geography == "states", NAME == "South Dakota")
+```
+
+
+```{r}
+ggplot2::ggplot() +
+  # Base map from OpenStreetMap
+  ggspatial::annotation_map_tile(type = "osm", zoomin = -1,
+                                 progress = "none") +
+  landMaps::ggplot_layer_sf(sd)
+```
+
+## Tribes overlapping South Dakota
+
 ```{r}
 sdTribes <- c("Rosebud", "Pine Ridge", "Crow Creek", "Cheyenne River",
               "Lower Brule", "Santee Reservation", "Standing Rock",
@@ -32,7 +50,20 @@ sd_tribes <-
 
 ```{r}
 landMaps::ggplot_sf() +
-  landMaps:::ggplot_layer_sf(sd_tribes, fill = "green")
+  # Base map from OpenStreetMap
+  ggspatial::annotation_map_tile(type = "osm", zoomin = -1,
+                                 progress = "none") +
+  landMaps:::ggplot_layer_sf(sd_tribes, fill = "transparent")
+```
+
+```{r}
+landMaps::ggplot_sf() +
+  # Base map from OpenStreetMap
+  ggspatial::annotation_map_tile(type = "osm", zoomin = 0,
+                                 progress = "none") +
+  landMaps:::ggplot_layer_sf(
+    dplyr::filter(sd_tribes, grepl("Pine Ridge", NAME)),
+    fill = "transparent")
 ```
 
 Can constrain area using bounding box `sf::st_bbox`.
