@@ -1,5 +1,5 @@
 ---
-title: "tidycensus"
+title: "US Census Maps"
 author: "Brian Yandell"
 date: "2024-10-15"
 output: html_document
@@ -13,47 +13,11 @@ See
 
 - <https://walker-data.com/tidycensus/articles/basic-usage.html>
 - <https://rpubs.com/kitadasmalley/getACSVars>
-
-Get a Census API key at
-<http://api.census.gov/data/key_signup.html>
-and supply the key to `tidycensus::census_api_key()`
-for a tidycensus session.
-
-```{r eval=FALSE}
-# Unfortunately, this does not seem to work at the moment.
-tidycensus::census_api_key(readline(), overwrite = FALSE, install = TRUE)
-readRenviron("~/.Renviron")
-#Sys.unsetenv("CENSUS_API_KEY")
-Sys.getenv("CENSUS_API_KEY")
-```
-
-```{r eval=FALSE}
-# Cache shapefiles for use in future sessions.
-options(tigris_use_cache = TRUE)
-```
+- [US Census Maps Data Setup]([censusSetup.Rmd](https://github.com/byandell-Tribal/landMaps/blob/main/censusSetup.Rmd)
+)
 
 ```{r}
-if(file.exists(filename <- "data/census_geometry.rds")) {
-  census_geometry <- readRDS(filename)
-} else {
-  aiannh <- dplyr::mutate(
-    read_census("american indian area/alaska native area/hawaiian home land"),
-    color = "red")
-  states <- dplyr::mutate(read_census("state"), color = "black")
-  counties <- dplyr::mutate(read_census("county"), color = "grey")
-  census_geometry <- 
-    sf::st_as_sf(
-      tibble::as_tibble(
-        dplyr::bind_rows(
-          aiannh = aiannh,
-          states = states,
-          counties = counties,
-          .id = "geography")))
-  census_geometry <- dplyr::mutate(census_geometry,
-      geography = factor(.data$geography, c("counties", "states", "aiannh")))
-
-  saveRDS(census_geometry, filename)
-}
+census_geometry <- readRDS("data/census_geometry.rds")
 ```
 
 ```{r}

@@ -1,0 +1,99 @@
+---
+title: "NativeLand"
+author: "Brian Yandell"
+date: "2024-10-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = ".")
+```
+
+## Native Land Local Data Setup
+
+This Rmarkdown file assumes that 
+[censusSetup.Rmd](https://github.com/byandell-Tribal/landMaps/blob/main/censusSetup.Rmd)
+has been already used to set up US Census files.
+
+The
+[native-land.ca](https://native-land.ca/resources/api-docs/)
+just reorganized their API.
+I have put my API key in folder `data` local to my computer.
+You can cut and paste your own
+
+```{r eval=FALSE}
+if(!dir.exists("data") dir.create("data"))
+saveRDS(readline(), "data/nativeLandKey.rds")
+```
+
+```{r}
+nativeLandKey <- readRDS("data/nativeLandKey.rds")
+```
+
+### Native Land Full Downloads
+
+Get full downloads at <https://api-docs.native-land.ca/full-geojsons>
+using your own key.
+I have done that and put entries in my (local) `data` folder.
+Here I read those GeoJSON files into a `sf` data frame.
+
+I save this locally for my own possible use.
+This object is **NOT** used in the package, nor is it
+saved to
+[github](https://github.com/byandell-Tribal/nativeLand).
+
+```{r}
+if(file.exists(filename <- "data/NativeLandData.rds")) {
+  nativeLandData <- readRDS(filename)
+} else {
+  nativeLandData <- dplyr::bind_rows(
+    territories = landMaps::features_reform(
+      rjson::fromJSON(file = "data/territories")$features),
+    languages   = landMaps::features_reform(
+      rjson::fromJSON(file = "data/languages")$features),
+    treaties    = landMaps::features_reform(
+      rjson::fromJSON(file = "data/treaties")$features),
+    .id = "category")
+  sf::st_crs(nativeLandData) <- 4326
+  saveRDS(nativeLandData, filename)
+}
+```
+
+### Native Land Slug (lookup names)
+
+The `nativeLandSlug` only has `category` and `Slug`,
+useful for name lookups later. 
+It would be nice if `native-land.ca` had this directly.
+
+```{r}
+if(file.exists(filename <- "data/NativeLandSlug.rds")) {
+  nativeLandSlug <- readRDS(filename)
+} else {
+  nativeLandSlug <- dplyr::select(nativeLandData, category, Slug)
+  nativeLandSlug$geometry <- NULL
+  saveRDS(nativeLandSlug, filename)
+}
+```
+
+This `Slug` file is saved locally, and used in the shiny app
+[landMaps::nativeLandApp()](https://github.com/byandell-Tribal/landMaps/blob/main/R/nativeLand.R).
+However, it is not saved to github.
+As constructed, it include only the `category` and `Slug`
+columns from
+[native-land.ca](https://native-land.ca/resources/api-docs/).
+
+### nativeLand for US only.
+
+```{r}
+census_geometry <- readRDS("data/census_geometry.rds")
+```
+.
+```{r}
+if(file.exists(filename <- "data/NativeLandUS.rds")) {
+  nativeLandUS <- readRDS(filename)
+} else {
+  nativeLandUS <- landMaps:::nativeLand_us(nativeLandData, census_geometry)
+  saveRDS(nativeLandUS, "data/nativeLandUS.rds")
+}
+```

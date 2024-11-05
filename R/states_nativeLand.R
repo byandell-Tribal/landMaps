@@ -26,9 +26,6 @@ states_nativeLand <- function(census_sf, nativeLand_sf,
         catname, category, Slug, sep = ", ", remove = FALSE),
       .data$catname %in% catname),
     -catname, -color)
-  
-  # Now take union over native lands to reduce to one geometry.
-  nativeLand_sf <- sf::st_sf(sf::st_union(nativeLand_sf))
 
   # Reduce `census_sf` by intersection with `nativeLand_sf`.
   out <- intersect_sf(census_sf, nativeLand_sf)

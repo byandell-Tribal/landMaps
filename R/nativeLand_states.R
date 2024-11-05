@@ -49,6 +49,10 @@ union_us <- function(census_geometry) {
 }
 # Reduce `result_sf` by intersection with `land_sf`.
 intersect_sf <- function(result_sf, land_sf) {
+  
+  # Now take union over `land_sf` to reduce to one geometry.
+  land_sf <- sf::st_sf(sf::st_union(land_sf))
+  
   object <- list()
   options(warn = -1)
   on.exit(options(warn = 0))
