@@ -4,7 +4,7 @@
 \alias{states_nativeLand}
 \title{States that overlap Selected Native Land}
 \usage{
-states_nativeLand(census_sf, nativeLand_sf, catname = NULL)
+states_nativeLand(census_sf, nativeLand_sf, catname = NULL, overlap = TRUE)
 }
 \arguments{
 \item{census_sf}{simple feature of census data}
@@ -12,6 +12,8 @@ states_nativeLand(census_sf, nativeLand_sf, catname = NULL)
 \item{nativeLand_sf}{simple feature of nativeLand data}
 
 \item{catname}{selected `catname` = `category, Slug`}
+
+\item{overlap}{overlap states beyond boundary if `TRUE`}
 }
 \value{
 simple feature

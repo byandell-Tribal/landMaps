@@ -46,14 +46,13 @@ nativeLandServer <- function(id) {
                          state.abb,
                          multiple = TRUE)
     })
-    # ** This will not work here. Needs to be in census but needs to know
-    # input$catstate. this will take more logic. **
+    # Find states that overlap with selected native lands.
     state_natives <- shiny::reactive({
       if(!shiny::isTruthy(input$catname) | !shiny::isTruthy(input$catstate))
         return(NULL)
-      shiny::req(input$catname, input$password)
+      shiny::req(input$catname, input$password, cat_places())
       # Limit to territories for now.
-      states_nativeLand(census_geometry, nativeLandUS, input$catname)
+      states_nativeLand(census_geometry, cat_places(), input$catname)
     })
     
     cat_places <- shiny::reactive({
@@ -76,12 +75,19 @@ nativeLandServer <- function(id) {
     
     gg_plot <- shiny::reactive({
       if(shiny::isTruthy(places()) && nrow(places())) {
-        ggplot_nativeLand(places(), title = "", label = FALSE)
+        out <- ggplot_nativeLand(places(), title = "", label = FALSE)
+        # Add `states` overlapping with Native lands.
+        if(shiny::isTruthy(input$catstate) &&
+           shiny::isTruthy(state_natives()) &&
+           nrow(state_natives())) {
+          out <- list(out,
+                      landMaps:::ggplot_layer_sf(state_natives()))
+        }
+        out
       } else {
         NULL
       }
     })
-    # *** Somehow color got messed up. ***
     color <- shiny::reactive({
       if(shiny::isTruthy(input$catname) | shiny::isTruthy(input$native_states)) {
         unique(places()$color)
@@ -105,7 +111,10 @@ nativeLandInput <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::h4("Native Land Maps"),
-    shiny::uiOutput(ns("catname")),
+    shiny::fluidRow(
+      shiny::column(8, shiny::uiOutput(ns("catname"))),
+      shiny::column(4, shiny::checkboxInput(ns("catstate"), "States?", FALSE))
+    ),
     shiny::fluidRow(
       shiny::column(8, shiny::uiOutput(ns("native_states"))),
       shiny::column(4, shiny::checkboxInput(ns("overlap"), "Overlap?", FALSE))
