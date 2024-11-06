@@ -3,7 +3,7 @@
 Read land maps as simple features and display in various ways.
 This repo includes an R package `landMaps` that was inspired by the
 python-based
-[Earth Data Analytics](https://github.com/byandell-Tribal/EarthDataAnalytics)
+[Earth Data Analytics](https://github.com/byandell-envsys/EarthDataAnalytics)
 course from
 [Environmental Data Science Innovation & Inclusion Lab (ESIIL)](https://esiil.org/)
 and
@@ -41,7 +41,7 @@ multispectral imaging.
 To install this package:
 
 ```
-devtools::install_github("byandell-Tribal/landMaps")
+devtools::install_github("byandell-envsys/landMaps")
 ```
 
 It uses the
@@ -49,9 +49,9 @@ It uses the
 and the
 [tidycensus](https://walker-data.com/tidycensus/) package,
 as well as ideas from
-[First Map Template](https://github.com/byandell-Tribal/first-map-template/)
+[First Map Template](https://github.com/byandell-envsys/first-map-template/)
 and other repos you can find via my repo
-[Earth Data Analytics](https://github.com/byandell-Tribal/EarthDataAnalytics).
+[Earth Data Analytics](https://github.com/byandell-envsys/EarthDataAnalytics).
 Static maps are plotted using `ggplot2` with `sf` bridging
 with `geom_sf` for polygon and point layers.
 Other packages will be pulled in as needed.
@@ -62,7 +62,7 @@ with `annotation_map_tile` from `ggspatial` package.
 Interactive maps can be produces with package `tmap`.
 Coming are interactive and embedded maps.
 See prototypes in
-[first-map.Rmd](https://github.com/byandell-Tribal/first-map-template/blob/main/first-map.Rmd).
+[first-map.Rmd](https://github.com/byandell-envsys/first-map-template/blob/main/first-map.Rmd).
 
 ## Native Land and Census Access
 
@@ -76,12 +76,17 @@ that can improve performance.
 However, I was not able to obtain a key yet.
 
 This package includes some shiny apps that can be used to
-visualize selected territories, languages and treaties.
+visualize selected Native Land territories, languages and treaties,
+and US Census AIANNH sites, states and counties.
+The last app `landPlotApp()` combines the other two.
 
 ```
 landMaps::nativeLandApp()
 landMaps::censusApp()
+landMaps::landPlotApp()
 ```
+
+## Data Setup
 
 You will need to paste in your `native-land` key to use,
 as this repo does not include any data from
@@ -89,17 +94,17 @@ as this repo does not include any data from
 You will also need to construct some `data` files (stored in your local `data`
 folder) to respect the sovereignty of these data.
 
-For more details, see
+For more details on data setup, see
 
-- [nativeLand.Rmd)](https://github.com/byandell-Tribal/landMaps/blob/main/nativeLand.Rmd)
-- [tidycensus.Rmd)](https://github.com/byandell-Tribal/landMaps/blob/main/tidycensus.Rmd)
+- [nativeLandSetup.Rmd](https://github.com/byandell-envsys/landMaps/blob/main/nativeLandSetup.Rmd)
+- [censusSetup.Rmd](https://github.com/byandell-envsys/landMaps/blob/main/censusSetup.Rmd)
 
-for some ideas on use of keys with this package,
-and for package function examples.
-For instance, the `nativeLand` code constructs a `slug` data frame
-that is used for name lookup.
-The table `nativeDataSlug` expected to be found in
-`data/nativeDataSlug.rds` for the `nativeLandApp()` shiny app.
+The additional Rmarkdown files 
+
+- [nativeLand.Rmd)](https://github.com/byandell-envsys/landMaps/blob/main/nativeLand.Rmd)
+- [census.Rmd)](https://github.com/byandell-envsys/landMaps/blob/main/census.Rmd)
+
+include some package function examples.
 
 ## Other Approaches
 

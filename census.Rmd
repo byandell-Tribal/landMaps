@@ -13,7 +13,7 @@ See
 
 - <https://walker-data.com/tidycensus/articles/basic-usage.html>
 - <https://rpubs.com/kitadasmalley/getACSVars>
-- [US Census Maps Data Setup]([censusSetup.Rmd](https://github.com/byandell-Tribal/landMaps/blob/main/censusSetup.Rmd)
+- [US Census Maps Data Setup](https://github.com/byandell-envsys/landMaps/blob/main/censusSetup.Rmd)
 )
 
 ```{r}

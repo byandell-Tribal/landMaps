@@ -29,7 +29,7 @@ R libraries, as well as
 [tidyverse](https://www.tidyverse.org/).
 
 This Rmarkdown file assumes that 
-[nativeLandSetup.Rmd](https://github.com/byandell-Tribal/landMaps/blob/main/nativeLandSetup.Rmd)
+[nativeLandSetup.Rmd](https://github.com/byandell-envsys/landMaps/blob/main/nativeLandSetup.Rmd)
 has been used to set up files.
 In there, the
 [native-land.ca API key](https://native-land.ca/resources/api-docs/)
@@ -59,7 +59,7 @@ nativeLandSlug <- readRDS("data/NativeLandSlug.rds")
 ```
 
 This file is saved locally, and used in the shiny app
-[landMaps::nativeLandApp()](https://github.com/byandell-Tribal/landMaps/blob/main/R/nativeLand.R).
+[landMaps::nativeLandApp()](https://github.com/byandell-envsys/landMaps/blob/main/R/nativeLand.R).
 However, it is not saved to github.
 As constructed, it include only the `category` and `Slug`
 columns from

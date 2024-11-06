@@ -13,7 +13,7 @@ knitr::opts_knit$set(root.dir = ".")
 ## Native Land Local Data Setup
 
 This Rmarkdown file assumes that 
-[censusSetup.Rmd](https://github.com/byandell-Tribal/landMaps/blob/main/censusSetup.Rmd)
+[censusSetup.Rmd](https://github.com/byandell-envsys/landMaps/blob/main/censusSetup.Rmd)
 has been already used to set up US Census files.
 
 The
@@ -41,7 +41,7 @@ Here I read those GeoJSON files into a `sf` data frame.
 I save this locally for my own possible use.
 This object is **NOT** used in the package, nor is it
 saved to
-[github](https://github.com/byandell-Tribal/nativeLand).
+[github](https://github.com/byandell-envsys/nativeLand).
 
 The following reads all Native land features and
 organizes them into `category`.
@@ -80,7 +80,7 @@ if(file.exists(filename <- "data/NativeLandSlug.rds")) {
 ```
 
 This `Slug` file is saved locally, and used in the shiny app
-[landMaps::nativeLandApp()](https://github.com/byandell-Tribal/landMaps/blob/main/R/nativeLand.R).
+[landMaps::nativeLandApp()](https://github.com/byandell-envsys/landMaps/blob/main/R/nativeLand.R).
 However, it is not saved to github.
 As constructed, it include only the `category` and `Slug`
 columns from
