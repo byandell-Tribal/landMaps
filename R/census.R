@@ -76,7 +76,7 @@ censusServer <- function(id) {
           dplyr::arrange(
             census_geometry[which(census_names %in% place_names),],
               .data$category),
-          category, Name, color, geometry)
+          category, Name, color, description, geometry)
       } else {
         NULL
       }

@@ -84,11 +84,11 @@ nativeLandServer <- function(id) {
         places <- dplyr::filter(nativeLandUS, .data$Slug %in% places$Slug)
       }
       if(!is.null(places)) {
-        places <- dplyr::select(places, category, Name, color, geometry)
+        places <- dplyr::select(places, category, Name, color, description, geometry)
       }
       if(shiny::isTruthy(input$catname)) {
         places <- dplyr::bind_rows(
-          dplyr::select(native_places(), category, Name, color, geometry), 
+          dplyr::select(native_places(), category, Name, color, description, geometry), 
           places)
       }
       # Append states that overlap with selected Native lands. 
@@ -96,7 +96,7 @@ nativeLandServer <- function(id) {
          shiny::isTruthy(state_natives()) &&
          nrow(state_natives())) {
         places <- dplyr::bind_rows(
-          dplyr::select(state_natives(), category, Name, color, geometry), 
+          dplyr::select(state_natives(), category, Name, color, description, geometry), 
           places)
       }
       # Append treaties that overlap with selected Native lands. 
@@ -104,7 +104,7 @@ nativeLandServer <- function(id) {
          shiny::isTruthy(treaties()) &&
          nrow(treaties())) {
         places <- dplyr::bind_rows(
-          dplyr::select(treaties(), category, Name, color, geometry), 
+          dplyr::select(treaties(), category, Name, color, description, geometry), 
           places)
       }
       # Remove possible duplication of Native places.

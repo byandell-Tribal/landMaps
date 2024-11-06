@@ -1,5 +1,5 @@
 Package: landMaps
-Version: 0.4.4
+Version: 0.4.5
 Date: 2024-11-06
 Title: Maps of land boundaries
 Description: Tools to study native land data
@@ -9,7 +9,7 @@ Authors@R: c(person("Brian S Yandell",
 Depends:
     R (>= 4.2.0)
 Imports:
-    dplyr, ggspatial, ggplot2, purrr, rjson, sf, shiny, tibble
+    dplyr, DT, ggspatial, ggplot2, purrr, rjson, sf, shiny, tibble
 License: GPL-3
 Encoding: UTF-8
 RoxygenNote: 7.3.2

@@ -10,6 +10,8 @@
 #'             moduleServer NS plotOutput radioButtons reactive renderPlot
 #'             sliderInput sidebarPanel titlePanel uiOutput
 #' @importFrom ggspatial annotation_map_tile
+#' @importFrom DT dataTableOutput renderDataTable
+#' @importFrom sf st_drop_geometry
 landPlotServer <- function(id, places = shiny::reactive(NULL)) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
@@ -47,6 +49,11 @@ landPlotServer <- function(id, places = shiny::reactive(NULL)) {
       shiny::req(input$height)
       shiny::plotOutput(ns("main_plot"), height = paste0(input$height, "px"))
     })
+    output$places <- DT::renderDataTable({
+        shiny::req(places())
+        sf::st_drop_geometry(places())
+      },
+      escape = FALSE, options = list(scrollX = TRUE, pageLength = 5))
   })
 }
 #' Shiny Module Input for landPlot
@@ -71,7 +78,9 @@ landPlotInput <- function(id) {
 #' @export
 landPlotOutput <- function(id) {
   ns <- shiny::NS(id)
-  shiny::uiOutput(ns("show_plot"))
+  shiny::tagList(
+    shiny::uiOutput(ns("show_plot")),
+    DT::dataTableOutput(ns("places")))
 }
 #' Shiny Module App for landPlot
 #' @return nothing returned
