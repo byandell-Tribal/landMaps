@@ -7,20 +7,23 @@
 #' @export
 #' @rdname landPlot
 #' @importFrom shiny checkboxInput column fluidPage fluidRow mainPanel
-#'             moduleServer NS plotOutput reactive renderPlot sliderInput
-#'             sidebarPanel titlePanel uiOutput
+#'             moduleServer NS plotOutput radioButtons reactive renderPlot
+#'             sliderInput sidebarPanel titlePanel uiOutput
 #' @importFrom ggspatial annotation_map_tile
 landPlotServer <- function(id, places = shiny::reactive(NULL)) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    # Zoom for annotation map tile
-    output$zoom <- shiny::renderUI({
+    # Zoomin for annotation map tile
+    output$zoomin <- shiny::renderUI({
       if(shiny::isTruthy(input$osm)) {
-        value <- -1
-        if(shiny::isTruthy(input$osm_zoom))
-          value <- input$osm_zoom
-        shiny::sliderInput(ns("osm_zoom"), "Zoom:", -2, 1, value, 1)
+        selected <- "1"
+        if(shiny::isTruthy(input$zoomin))
+          selected <- input$zoomin
+        shiny::radioButtons(ns("zoomin"), "", selected = selected,
+                            inline = TRUE,
+                            choiceNames = c("-","o","+"),
+                            choiceValues = -1:1)
       }
     })
 
@@ -28,10 +31,11 @@ landPlotServer <- function(id, places = shiny::reactive(NULL)) {
     output$main_plot <- shiny::renderPlot({
       if(shiny::isTruthy(places()) && nrow(places())) {
         out <- ggplot_sf(color = unique(places()$color))
-        if(shiny::isTruthy(input$osm_zoom) & shiny::isTruthy(input$osm)) {
+        if(shiny::isTruthy(input$zoomin) & shiny::isTruthy(input$osm)) {
           # Base map from OpenStreetMap
           out <- out +
-            ggspatial::annotation_map_tile(type = "osm", zoomin = input$osm_zoom,
+            ggspatial::annotation_map_tile(type = "osm",
+                                           zoomin = as.numeric(input$zoomin),
                                            progress = "none")
         }
         print(out + ggplot_layer_sf(places()))
@@ -55,8 +59,8 @@ landPlotInput <- function(id) {
   shiny::tagList(
     shiny::sliderInput(ns("height"), "Height:", 300, 800, 500, 100),
     shiny::fluidRow(
-      shiny::column(4, shiny::checkboxInput(ns("osm"), "Geo Layer?", FALSE)),
-      shiny::column(8, shiny::uiOutput(ns("zoom"))),
+      shiny::column(4, shiny::checkboxInput(ns("osm"), "Geo Layer?", TRUE)),
+      shiny::column(8, shiny::uiOutput(ns("zoomin"))),
     )
   )
 }

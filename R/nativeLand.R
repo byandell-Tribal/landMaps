@@ -31,16 +31,18 @@ nativeLandServer <- function(id) {
     
     # ** This is slow as it does `st_interaction` for every object. **
     # ** Better to consider a subset that is only in US? **
-    nativeLandUS <- dplyr::filter(
-      readRDS("data/nativeLandUS.rds"),
-      category == "territories")
+    nativeLandUS <- readRDS("data/nativeLandUS.rds")
+    nativeLand_territories <- dplyr::filter(nativeLandUS,
+                                            category == "territories")
+    nativeLand_treaties <- dplyr::filter(nativeLandUS,
+                                         .data$category == "treaties")
     census_geometry <- readRDS("data/census_geometry.rds")
     native_states <- shiny::reactive({
       if(!shiny::isTruthy(input$native_states))
         return(NULL)
       shiny::req(input$native_states, input$password)
       # Limit to territories for now.
-      nativeLand_states(nativeLandUS, census_geometry, input$native_states)
+      nativeLand_states(nativeLand_territories, census_geometry, input$native_states)
     })
     output$native_states <- shiny::renderUI({
       shiny::selectInput(ns("native_states"), "Native Lands over States:", 
@@ -51,45 +53,63 @@ nativeLandServer <- function(id) {
     state_natives <- shiny::reactive({
       if(!shiny::isTruthy(input$catname) | !shiny::isTruthy(input$catstate))
         return(NULL)
-      shiny::req(input$catname, input$password, cat_places())
+      shiny::req(input$catname, input$password, native_places())
       # Limit to territories for now.
-      dplyr::select(
-        states_nativeLand(census_geometry, cat_places(), input$catname),
-        category, Name, color, geometry)
+      states_nativeLand(census_geometry, native_places(), input$catname)
+    })
+    # Find treaties that overlap with selected native lands.
+    treaties <- shiny::reactive({
+      if(!shiny::isTruthy(input$treaties) | !shiny::isTruthy(input$treaties))
+        return(NULL)
+      shiny::req(input$treaties, input$password, native_places())
+      # Intersect treaties with selected Native places.
+      out <- intersect_sf(nativeLand_treaties, native_places())
+      if(shiny::isTruthy(input$treaty_overlap)) {
+        out <- dplyr::filter(nativeLand_treaties, .data$Name %in% out$Name)
+      }
+      out
     })
     
-    cat_places <- shiny::reactive({
+    native_places <- shiny::reactive({
       shiny::req(input$catname, input$password)
       category <- stringr::str_remove(input$catname, ", .*$")
       name <- stringr::str_remove(input$catname, "^.*, ")
-      dplyr::select(
-        get_nativeLand(category, name, input$password, slug),
-        category, Name, color, geometry)
-      
+      get_nativeLand(category, name, input$password, slug)
     })
     
     # places
     shiny::reactive({
-      native_places <- native_states()
-      if(shiny::isTruthy(input$overlap) & shiny::isTruthy(native_places)) {
-        native_places <- dplyr::filter(
-          nativeLandUS, .data$Slug %in% native_places$Slug)
+      places <- native_states()
+      if(shiny::isTruthy(input$overlap) & shiny::isTruthy(places)) {
+        places <- dplyr::filter(nativeLandUS, .data$Slug %in% places$Slug)
       }
-      if(!is.null(native_places)) {
-        native_places <- dplyr::select(native_places,
-                                       category, Name, color, geometry)
+      if(!is.null(places)) {
+        places <- dplyr::select(places, category, Name, color, geometry)
       }
       if(shiny::isTruthy(input$catname)) {
-        native_places <- dplyr::bind_rows(cat_places(), native_places)
+        places <- dplyr::bind_rows(
+          dplyr::select(native_places(), category, Name, color, geometry), 
+          places)
       }
+      # Append states that overlap with selected Native lands. 
       if(shiny::isTruthy(input$catstate) &&
          shiny::isTruthy(state_natives()) &&
          nrow(state_natives())) {
-        native_places <- dplyr::bind_rows(state_places, native_places)
+        places <- dplyr::bind_rows(
+          dplyr::select(state_natives(), category, Name, color, geometry), 
+          places)
+      }
+      # Append treaties that overlap with selected Native lands. 
+      if(shiny::isTruthy(input$treaties) &&
+         shiny::isTruthy(treaties()) &&
+         nrow(treaties())) {
+        places <- dplyr::bind_rows(
+          dplyr::select(treaties(), category, Name, color, geometry), 
+          places)
       }
       # Remove possible duplication of Native places.
-      place_names <- native_places$Name
-      native_places[!duplicated(place_names),]
+      place_names <- places$Name
+      places[!duplicated(place_names),]
     })
   })
 }
@@ -106,6 +126,10 @@ nativeLandInput <- function(id) {
       shiny::column(8, shiny::uiOutput(ns("catname"))),
       shiny::column(4, shiny::checkboxInput(ns("catstate"), "States?", FALSE))
     ),
+    shiny::fluidRow(
+      shiny::column(6, shiny::checkboxInput(ns("treaties"), "Treaties?", FALSE)),
+      shiny::column(6,
+        shiny::checkboxInput(ns("treaty_overlap"), "Overlap?", FALSE))),
     shiny::fluidRow(
       shiny::column(8, shiny::uiOutput(ns("native_states"))),
       shiny::column(4, shiny::checkboxInput(ns("overlap"), "Overlap?", FALSE))
