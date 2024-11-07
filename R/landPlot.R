@@ -11,7 +11,7 @@
 #'             sliderInput sidebarPanel titlePanel uiOutput
 #' @importFrom ggspatial annotation_map_tile
 #' @importFrom DT dataTableOutput renderDataTable
-#' @importFrom sf st_drop_geometry
+#' @importFrom dplyr bind_rows
 landPlotServer <- function(id, places = shiny::reactive(NULL)) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
