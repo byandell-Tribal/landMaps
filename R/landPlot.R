@@ -51,7 +51,7 @@ landPlotServer <- function(id, places = shiny::reactive(NULL)) {
     })
     output$places <- DT::renderDataTable({
         shiny::req(places())
-        sf::st_drop_geometry(places())
+        description_link(places())
       },
       escape = FALSE, options = list(scrollX = TRUE, pageLength = 5))
   })
