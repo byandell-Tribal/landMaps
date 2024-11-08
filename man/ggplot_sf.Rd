@@ -16,7 +16,7 @@ ggplot_layer_sf(
   ...
 )
 
-ggplot_layer_name(object, label = "NAME", color = "black", ...)
+ggplot_layer_name(object, label = "Name", color = "black", ...)
 }
 \arguments{
 \item{legend.position}{position of legend (default "bottom")}

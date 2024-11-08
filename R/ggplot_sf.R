@@ -20,6 +20,7 @@ ggplot_sf <- function(legend.position = "none",
     ggplot2::theme(strip.text.x = ggplot2::element_text(size = 10))
   if(!is.null(color) && length(color)) {
     # Name color by their value if not provided.
+    color <- unique(color)
     if(is.null(names(color)))
       names(color) <- color
     out <- out +
@@ -67,7 +68,7 @@ ggplot_layer_sf <- function(object,
 #' @export
 #' @rdname ggplot_sf
 ggplot_layer_name <- function(object,
-                              label = "NAME", color = "black", ...) {
+                              label = "Name", color = "black", ...) {
   ggrepel::geom_text_repel(
 #    ggplot2::geom_sf_label(
     data = object,

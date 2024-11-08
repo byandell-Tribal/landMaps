@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 knitr::opts_knit$set(root.dir = ".")
 ```
 
@@ -45,7 +45,8 @@ This is for internal use.
 
 ```{r}
 nativeLandData <- readRDS("data/NativeLandData.rds")
-nativeLandUS <- readRDS("data/NativeLandUS.rds")
+nativeLandUS <- readRDS("data/nativeLandUS.rds")
+nativeLandUS <- nativeLandUS[nativeLandUS$category == "territories", ]
 ```
 
 ### Native Land Slug (lookup names)
@@ -84,29 +85,34 @@ str(nativeLandData)
 ```
 
 ```{r}
-oceti_sakowin <- dplyr::filter(nativeLandData,
-                               grepl("akota|oceti|laramie",
-                                     .data$Slug))
+tmp <- grep("akota|oceti|laramie", nativeLandUS$Slug)
+oceti_sakowin <- nativeLandUS[tmp,]
 ```
 
 ```{r warning = FALSE}
-landMaps::ggplot_sf(legend.position = "right") + 
-  landMaps::ggplot_nativeLand(oceti_sakowin,
-                              title = "Oceti Sakowin")
+landMaps::ggplot_sf(color = oceti_sakowin$color) + 
+  landMaps::ggplot_layer_sf(oceti_sakowin) +
+  landMaps::ggplot_layer_name(oceti_sakowin) +
+  ggplot2::ggtitle("Oceti Sakowin")
+```
+
+Add base map from OpenStreetMap
+
+```{r}
+landMaps::ggplot_sf(color = oceti_sakowin$color) + 
+  ggspatial::annotation_map_tile(type = "osm", zoomin = -1) +
+  landMaps::ggplot_layer_sf(oceti_sakowin) +
+  landMaps::ggplot_layer_name(oceti_sakowin) +
+  ggplot2::ggtitle("Oceti Sakowin")
+
 ```
 
 ```{r}
-landMaps::ggplot_sf() + 
-  # Base map from OpenStreetMap
-  ggspatial::annotation_map_tile(type = "osm", zoom = 14,
-                                 progress = "none") +
-  landMaps::ggplot_nativeLand(oceti_sakowin,
-                              title = "Oceti Sakowin")
-```
-
-```{r}
-landMaps::ggplot_sf() + 
-  landMaps::ggplot_nativeLand(oceti_sakowin) +
+landMaps::ggplot_sf(color = oceti_sakowin$color) + 
+  ggspatial::annotation_map_tile(type = "osm", zoomin = -1) +
+  landMaps::ggplot_layer_sf(oceti_sakowin) +
+  landMaps::ggplot_layer_name(oceti_sakowin) +
+  ggplot2::ggtitle("Oceti Sakowin") +
   ggplot2::facet_wrap(~ category)
 ```
 
@@ -118,18 +124,10 @@ menominee <- dplyr::filter(nativeLandData,
 ```
 
 ```{r warning=FALSE}
-landMaps::ggplot_sf() +
-  landMaps::ggplot_nativeLand(menominee)
-```
-
-The following does not work yet. Not sure why.
-
-```{r warning=FALSE, eval=FALSE}
-landMaps::ggplot_sf() +
-  # Base map from OpenStreetMap
-  ggspatial::annotation_map_tile(type = "osm", zoom = 14,
-                                 progress = "none") +
-  landMaps::ggplot_nativeLand(menominee)
+landMaps::ggplot_sf(color = menominee$color) + 
+  ggspatial::annotation_map_tile(type = "osm", zoomin = -1) +
+  landMaps::ggplot_layer_sf(menominee) +
+  ggplot2::ggtitle("Menominee")
 ```
 
 ### Direct request
@@ -143,23 +141,32 @@ landMaps::get_nativeLand("territories", "oceti", nativeLandKey)
 ```
 
 ```{r warning = FALSE}
-landMaps::ggplot_sf() +
-  landMaps::ggplot_nativeLand(
+landMaps::ggplot_sf(color = "blue") + 
+  ggspatial::annotation_map_tile(type = "osm", zoomin = -1) +
+  landMaps::ggplot_layer_sf(
     landMaps::get_nativeLand("territories", "oceti-sakowin-sioux",
-                             nativeLandKey))
+                             nativeLandKey)) +
+  ggplot2::ggtitle("Oceti Sakowin")
 ```
 
 ```{r warning = FALSE}
-landMaps::ggplot_sf() +
-  landMaps::ggplot_nativeLand(
+landMaps::ggplot_sf(color = "blue") + 
+  ggspatial::annotation_map_tile(type = "osm", zoomin = -1) +
+  landMaps::ggplot_layer_sf(
     landMaps::get_nativeLand("territories", "oceti",
-                             nativeLandKey, nativeLandSlug))
+                             nativeLandKey, nativeLandSlug)) +
+  ggplot2::ggtitle("Oceti Sakowin")
 ```
 
 ## Intersections with Minnesota, Wisconsin and Michigan
 
 ```{r}
 census_geometry <- readRDS("data/census_geometry.rds")
+```
+
+```{r}
+ggplot_sf(color = unique(nativeLandUS$color)) + 
+  ggplot_layer_sf(dplyr::filter(nativeLandUS, category == "territories"))
 ```
 
 ```{r}
@@ -173,10 +180,10 @@ census_mnwimi <- dplyr::filter(
 bbox_mnwimi <- sf::st_bbox(
   dplyr::filter(census_geometry, category == "states",
                 Name %in% c("Wisconsin", "Minnesota", "Michigan")))
-bbox_mnwimi_sf <- tibble::tibble(x = bbox_wi[c("xmin","xmax")],
-                     y = bbox_wi[c("ymin","ymax")]) |> 
+bbox_mnwimi_sf <- tibble::tibble(x = bbox_mnwimi[c("xmin","xmax")],
+                     y = bbox_mnwimi[c("ymin","ymax")]) |> 
   sf::st_as_sf(coords = c("x", "y")) |> 
-  sf::st_set_crs(sf::st_crs(nativeLandData)) |>
+  sf::st_set_crs(sf::st_crs(nativeLandUS)) |>
   #get the bounding box of the two x & y coordintates, make sfc
   sf::st_bbox() |>
   sf::st_as_sfc()
@@ -184,122 +191,60 @@ bbox_mnwimi_sf <- tibble::tibble(x = bbox_wi[c("xmin","xmax")],
 
 ```{r}
 ggplot2::ggplot() +
-  ggplot2::geom_sf(data = bbox_mnwimi_sf)
+  ggspatial::annotation_map_tile(type = "osm", zoomin = -1) +
+  ggplot2::geom_sf(data = bbox_mnwimi_sf, fill = "transparent")
 ```
 
-```{r warning=FALSE}
-nl_bbox_mnwimi <- list()
-for(i in seq_len(nrow(nativeLandData))) {
-  nl_bbox_mnwimi[[i]] <- tryCatch(
-    sf::st_intersection(nativeLandData[i,], bbox_mnwimi_sf),
-    error = function(e) NA)
+Native lands that intersect with the (box around) US states MN, WI, MI.
+Following step takes some time.
+
+```{r}
+if(file.exists(filename <- "data/nl_bbox_mnwimi.rds")) {
+  nl_bbox_mnwimi <- readRDS(filename)
+} else {
+  nl_bbox_mnwimi <- list()
+  for(i in seq_len(nrow(nativeLandData))) {
+    nl_bbox_mnwimi[[i]] <- tryCatch(
+      sf::st_intersection(nativeLandUS[i,], bbox_mnwimi_sf),
+      error = function(e) NA)
+  }
+  nl_bbox_mnwimi <- dplyr::bind_rows(
+    nl_bbox_mnwimi[!is.na(nl_bbox_mnwimi)])
+  table(nl_bbox_mnwimi$category)
+  saveRDS(nl_bbox_mnwimi, filename)
 }
-nl_bbox_mnwimi <- dplyr::bind_rows(
-  nl_bbox_mnwimi[!is.na(nl_bbox_mnwimi)])
-table(nl_bbox_mnwimi$category)
 ```
 
 ```{r warning = FALSE}
-landMaps::ggplot_sf() +
-  landMaps::ggplot_nativeLand(nl_bbox_mnwimi,
-                              title = "Native Land in MN/WI/MI") +
+landMaps::ggplot_sf(color = c(nl_bbox_mnwimi$color, census_geometry$color)) + 
+  ggspatial::annotation_map_tile(type = "osm", zoomin = -1) +
+  landMaps::ggplot_layer_sf(nl_bbox_mnwimi) +
+  ggplot2::ggtitle("Native Land in MN/WI/MI") +
   landMaps:::ggplot_layer_sf(
     dplyr::filter(census_geometry, category == "states",
-                  Name %in% c("Wisconsin", "Minnesota", "Michigan")),
-    color = "black") +
-  ggplot2::facet_wrap(~ category)
+                  Name %in% c("Wisconsin", "Minnesota", "Michigan")))
 ```
 
-```{r warning = FALSE}
-landMaps::ggplot_sf() +
-  landMaps::ggplot_nativeLand(
-    dplyr::filter(nl_bbox_mnwimi, category == "territories"),
-    title = "Native Land in MN/WI/MI") +
-  landMaps:::ggplot_layer_sf(
-    dplyr::filter(census_geometry, category == "states",
-                  Name %in% c("Wisconsin", "Minnesota", "Michigan")),
-    color = "black")
-```
+Native lands that overlap with the (box around) US states MN, WI, MI.
 
 ```{r}
-nativeLandUS <- readRDS("data/NativeLandUS.rds")
-```
-
-```{r}
-ggplot_sf(color = unique(nativeLandUS$color)) + 
-  ggplot_nativeLand(dplyr::filter(nativeLandUS, category == "territories"),
-                                  label = FALSE)
-```
-
-## Working stuff
-
-```{r warning=FALSE}
-nl_mnwimi <- list()
-for(i in seq_len(nrow(nativeLandData))) {
-  nl_mnwimi[[i]] <- tryCatch(
-    sf::st_intersection(nativeLandData[i,], census_mnwimi),
-    error = function(e) NA)
-}
-nl_mnwimi <- dplyr::bind_rows(nl_mnwimi[!is.na(nl_mnwimi)])
-table(nl_mnwimi$category)
+nl_mnwimi <- dplyr::filter(nativeLandUS, Name %in% nl_bbox_mnwimi$Name)
 ```
 
 ```{r warning = FALSE}
-landMaps::ggplot_sf() +
-  landMaps::ggplot_nativeLand(nl_mnwimi,
-                              title = "Native Land in MN/WI/MI") +
-  landMaps:::ggplot_layer_sf(
-    dplyr::filter(census_geometry, category == "states",
-                  Name %in% c("Wisconsin", "Minnesota", "Michigan")),
-    color = "red") +
-  ggplot2::facet_wrap(~ category)
-```
-
-
-```{r warning = FALSE}
-landMaps::ggplot_sf() +
-  landMaps::ggplot_nativeLand(nl_mnwimi) +
-  landMaps:::ggplot_layer_sf(
-    dplyr::filter(census_geometry, category == "states",
-                  Name %in% c("Wisconsin", "Minnesota", "Michigan")),
-    color = "red") +
-  ggplot2::facet_wrap(~ category)
-```
-
-The list below was done by hand using `native-land.ca`.
-There should be a programming way to find the overlap.
-
-```{r}
-wiTribes <- c("potawatomi", "brothertown", "menominee", "anishin", "ho-chunk", "oceti", "odawa", "mississauga", "fox", "wyandot",
-              "myaamia", "niuachi", "dewakan", "wahpe", "yankton",
-              "sisseton")
-name <- dplyr::filter(
-      nativeLandSlug,
-      grepl(paste(wiTribes, collapse = "|"), .data$Slug),
-      grepl("territories", .data$category))$Slug
-nativeLandWIs <- dplyr::filter(nativeLandData,
-                  .data$category == "territories",
-                  .data$Slug %in% name)
-nativeLandWIs$Name
-```
-
-```{r warning = FALSE}
-landMaps::ggplot_sf() +
+landMaps::ggplot_sf(color = c(nl_mnwimi$color, census_geometry$color)) +
+  ggspatial::annotation_map_tile(type = "osm", zoomin = -1, progress = "none") +
+  landMaps::ggplot_layer_sf(nl_mnwimi) +
+  ggplot2::ggtitle("Native Land in MN/WI/MI") +
   landMaps:::ggplot_layer_sf(
     dplyr::filter(census_geometry, category == "states",
                   Name %in% c("Wisconsin", "Minnesota", "Michigan"))) +
-  landMaps::ggplot_nativeLand(nativeLandWIs,
-                              title = "MN/WI/MI embedded in Native Lands")
+  ggplot2::facet_wrap(~ category)
+```
+```{r}
+sf::st_drop_geometry(nl_mnwimi) |>
+  dplyr::select(Slug, color, Name) |>
+  dplyr::mutate(Slug = stringr::str_replace_all(Slug, "(%|[0-9])", "")) |>
+  knitr::kable()
 ```
 
-```{r warning = FALSE}
-landMaps::ggplot_sf() +
-  landMaps:::ggplot_layer_sf(
-    dplyr::filter(census_geometry, category == "states",
-                  Name %in% c("Wisconsin", "Minnesota", "Michigan"))) +
-  landMaps::ggplot_nativeLand(nativeLandWIs,
-                              title = "Native Lands overlapping with MN/WI/MI") +
-  ggplot2::coord_sf(xlim = bbox_wi[c("xmin","xmax")],
-                    ylim = bbox_wi[c("ymin","ymax")])
-
-```

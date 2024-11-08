@@ -73,8 +73,12 @@ bbox_sd_tribes <- sf::st_bbox(sd_tribes)
 ```
 
 ```{r}
+nativeLandUS <- readRDS("data/nativeLandUS.rds")
+```
+
+```{r}
 object <- dplyr::filter(census_geometry, category == "states")
-p_states <- landMaps::ggplot_sf() +
+p_states <- landMaps::ggplot_sf(color = c(census_geometry$color, nativeLandUS$color)) +
   landMaps:::ggplot_layer_sf(object)
 ```
 
@@ -95,7 +99,9 @@ p_states + landMaps:::ggplot_layer_sf(sd_tribes, fill = "green") +
 nativeLandKey <- readRDS("data/nativeLandKey.rds")
 oceti <- landMaps::get_nativeLand("territories", "oceti-sakowin-sioux",
                            nativeLandKey)
-landMaps::ggplot_sf() + landMaps::ggplot_nativeLand(oceti)
+landMaps::ggplot_sf(color = oceti$color) +
+  ggspatial::annotation_map_tile(type = "osm", zoomin = -1, progress = "none") +
+  landMaps::ggplot_layer_sf(oceti)
 ```
 
 ```{r}
@@ -106,14 +112,17 @@ p_states +
 ```
 
 ```{r warning = FALSE}
-p_states + landMaps::ggplot_nativeLand(oceti) +
-    ggplot2::coord_sf(xlim = bbox_oceti[c("xmin","xmax")],
-                      ylim = bbox_oceti[c("ymin","ymax")])
+p_states + 
+  landMaps::ggplot_layer_sf(oceti) +
+  landMaps::ggplot_layer_name(oceti) +
+  ggplot2::coord_sf(xlim = bbox_oceti[c("xmin","xmax")],
+                    ylim = bbox_oceti[c("ymin","ymax")])
 ```
 
 ```{r}
 p_states +
-  landMaps::ggplot_nativeLand(oceti) +
+  landMaps::ggplot_layer_sf(oceti) +
+  landMaps::ggplot_layer_name(oceti) +
   landMaps:::ggplot_layer_sf(sd_tribes, fill = "green") +
     ggplot2::coord_sf(xlim = bbox_oceti[c("xmin","xmax")],
                       ylim = bbox_oceti[c("ymin","ymax")])
