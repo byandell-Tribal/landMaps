@@ -1,16 +1,14 @@
-#' @importFrom sf st_centroid st_coordinates st_drop_geometry
+#' @importFrom sf st_centroid st_coordinates st_drop_geometry st_geometry
+#'             st_make_valid
 #' @importFrom rlang .data
 #' @importFrom stringr str_detect
 description_link <- function(object){
   if(!nrow(object)) return(NULL)
   
-  # Get centroids
-  # *** This breeaks for Laramie with Treaties ***.
-  # *** Presumably one of the geometries is degenerate.
-  # Error in wk_handle.wk_wkb(wkb, s2_geography_writer(oriented = oriented,  : 
-  # Loop 0 is not valid: Edge 3 is degenerate (duplicate vertex)
-  # *** Also breaks on Laramie if key is invalid, Not catching properly ***
-  cent <- signif(sf::st_coordinates(sf::st_centroid(object)), 3)
+  # Get centroids. Have to first make geometry valid.
+  cent <- signif(sf::st_coordinates(sf::st_centroid(sf::st_make_valid(
+    sf::st_geometry(object)))), 3)
+
   object <- sf::st_drop_geometry(object)
   dplyr::mutate(object,
     long = cent[,1], lat = cent[,2],
