@@ -1,58 +1,50 @@
-#' Shiny Server for landPlot Example
+#' Shiny Server for landTable Display
 #'
 #' @param id shiny identifier
 #' @param places reactive object with places
 #' @param input,output,session shiny server reactives
 #' @return reactive server
 #' @export
-#' @rdname landPlot
+#' @rdname landTable
 #' @importFrom shiny checkboxInput column fluidPage fluidRow mainPanel
 #'             moduleServer NS plotOutput radioButtons reactive renderPlot
 #'             sliderInput sidebarPanel titlePanel uiOutput
 #' @importFrom ggspatial annotation_map_tile
+#' @importFrom DT dataTableOutput renderDataTable
 #' @importFrom dplyr bind_rows
-landPlotServer <- function(id, places = shiny::reactive(NULL)) {
+landTableServer <- function(id, places = shiny::reactive(NULL)) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    ggplotServer("ggplot", places)
-    landTableServer("landTable", places)
+    output$places <- DT::renderDataTable({
+        shiny::req(places())
+        description_link(places())
+      },
+      escape = FALSE, options = list(scrollX = TRUE, pageLength = 5))
   })
 }
-#' Shiny Module Input for landPlot
+#' Shiny Module Output for landTable
 #' @param id identifier for shiny reactive
 #' @return nothing returned
-#' @rdname landPlot
+#' @rdname landTable
 #' @export
-landPlotInput <- function(id) {
+landTableOutput <- function(id) {
   ns <- shiny::NS(id)
-  ggplotInput(ns("ggplot"))
+  DT::dataTableOutput(ns("places"))
 }
-#' Shiny Module Output for landPlot
-#' @param id identifier for shiny reactive
+#' Shiny Module App for landTable
 #' @return nothing returned
-#' @rdname landPlot
+#' @rdname landTable
 #' @export
-landPlotOutput <- function(id) {
-  ns <- shiny::NS(id)
-  shiny::tagList(
-    ggplotOutput(ns("ggplot")),
-    landTableOutput(ns("landTable")))
-}
-#' Shiny Module App for landPlot
-#' @return nothing returned
-#' @rdname landPlot
-#' @export
-landPlotApp <- function() {
+landTableApp <- function() {
   ui <- shiny::fluidPage(
     shiny::titlePanel("Land Shapefiles"),
     shiny::sidebarPanel(
       censusInput("census"),
-      nativeLandInput("nativeLand"),
-      landPlotInput("landPlot")
+      nativeLandInput("nativeLand")
     ),
     shiny::mainPanel(
-      landPlotOutput("landPlot")
+      landTableOutput("landTable")
     )
   ) 
   server <- function(input, output, session) {
@@ -64,8 +56,8 @@ landPlotApp <- function() {
       # Remove possible duplication places by `Name`.
       out[!duplicated(out$Name),]
     })
-    
-    landPlotServer("landPlot", places)
+
+    landTableServer("landTable", places)
   }
   shiny::shinyApp(ui, server)
 }
