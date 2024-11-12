@@ -23,6 +23,8 @@ ggplot_layer_name(object, label = "Name", color = "black", ...)
 
 \item{color}{edge color}
 
+\item{object}{simple feature object}
+
 \item{fill}{fill color}
 
 \item{linewidth}{edge line width}

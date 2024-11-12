@@ -30,6 +30,7 @@ ggplot_sf <- function(legend.position = "none",
 }
 #' Simple feature ggplot geom_sf layer
 #'
+#' @param object simple feature object
 #' @param color edge color
 #' @param fill fill color
 #' @param linewidth edge line width

@@ -15,7 +15,8 @@ nativeLand_states <- function(nativeLand_sf, census_sf,
   if(is.null(states) | is.null(nativeLand_sf) | is.null(census_sf))
     return(NULL)
   
-  state_names <- array(state.name, dimnames = list(state.abb))
+  state_names <- array(datasets::state.name,
+                       dimnames = list(datasets::state.abb))
   census_sf <- dplyr::select(
     dplyr::filter(census_sf,
       .data$category == "states", .data$Name %in% state_names[states]),

@@ -33,11 +33,12 @@ censusServer <- function(id) {
     })
     output$aiannh_states <- shiny::renderUI({
       shiny::selectInput(ns("aiannh_states"), "AIANNH in States:", 
-                         state.abb,
+                         datasets::state.abb,
                          multiple = TRUE)
     })
     
-    state_names <- array(state.name, dimnames = list(state.abb))
+    state_names <- array(datasets::state.name,
+                         dimnames = list(datasets::state.abb))
     county_states <- shiny::reactive({
       # Census uses whole name
       if(!shiny::isTruthy(input$county_states))
@@ -49,7 +50,7 @@ censusServer <- function(id) {
     })
     output$county_states <- shiny::renderUI({
       shiny::selectInput(ns("county_states"), "Counties in States:", 
-                         state.abb,
+                         datasets::state.abb,
                          multiple = TRUE)
     })
     
@@ -123,15 +124,15 @@ censusApp <- function() {
     shiny::titlePanel("Census Maps"),
     shiny::sidebarPanel(
       censusInput("census"),
-      landPlotInput("landPlot")
+      landGgplotInput("landGgplot")
     ),
     shiny::mainPanel(
-      landPlotOutput("landPlot")
+      landGgplotOutput("landGgplot")
     )
   )
   server <- function(input, output, session) {
     census_places <- censusServer("census")
-    landPlotServer("landPlot", census_places)
+    landGgplotServer("landGgplot", census_places)
   }
   shiny::shinyApp(ui, server)
 }

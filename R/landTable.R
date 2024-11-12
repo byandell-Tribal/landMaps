@@ -6,19 +6,18 @@
 #' @return reactive server
 #' @export
 #' @rdname landTable
-#' @importFrom shiny checkboxInput column fluidPage fluidRow mainPanel
-#'             moduleServer NS plotOutput radioButtons reactive renderPlot
-#'             sliderInput sidebarPanel titlePanel uiOutput
-#' @importFrom ggspatial annotation_map_tile
+#' @importFrom shiny fluidPage mainPanel moduleServer NS reactive req
+#'             sidebarPanel titlePanel
 #' @importFrom DT dataTableOutput renderDataTable
-#' @importFrom dplyr bind_rows
+#' @importFrom dplyr arrange
+#' @importFrom rlang .data
 landTableServer <- function(id, places = shiny::reactive(NULL)) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
     output$places <- DT::renderDataTable({
         shiny::req(places())
-        description_link(places())
+        table_setup(places())
       },
       escape = FALSE, options = list(scrollX = TRUE, pageLength = 5))
   })
@@ -38,7 +37,7 @@ landTableOutput <- function(id) {
 #' @export
 landTableApp <- function() {
   ui <- shiny::fluidPage(
-    shiny::titlePanel("Land Shapefiles"),
+    shiny::titlePanel("Land Maps"),
     shiny::sidebarPanel(
       censusInput("census"),
       nativeLandInput("nativeLand")
@@ -52,9 +51,7 @@ landTableApp <- function() {
     nativeLand_places <- nativeLandServer("nativeLand")
 
     places <- shiny::reactive({
-      out <- dplyr::bind_rows(census_places(), nativeLand_places())
-      # Remove possible duplication places by `Name`.
-      out[!duplicated(out$Name),]
+      order_places(nativeLand_places(), census_places())
     })
 
     landTableServer("landTable", places)

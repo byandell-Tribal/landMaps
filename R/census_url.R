@@ -10,8 +10,8 @@ census_url <- function(object) {
   # Create URL to Census Information as `description` column.
   dplyr::mutate(object,
     description = ifelse(.data$category == "counties", {
-      states <- state.abb
-      names(states) <- state.name
+      states <- datasets::state.abb
+      names(states) <- datasets::state.name
       state <- tolower(states[stringr::str_remove(.data$Name, "^.*, ")])
       county <- stringr::str_replace_all(
         tolower(stringr::str_remove(.data$Name, ", .*$")), " ", "-")

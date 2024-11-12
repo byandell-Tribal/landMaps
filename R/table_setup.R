@@ -2,8 +2,11 @@
 #'             st_make_valid
 #' @importFrom rlang .data
 #' @importFrom stringr str_detect
-description_link <- function(object){
+table_setup <- function(object){
   if(!nrow(object)) return(NULL)
+
+  # Arrange by `category`.  
+  object <- dplyr::arrange(object, .data$category)
   
   # Get centroids. Have to first make geometry valid.
   cent <- signif(sf::st_coordinates(sf::st_centroid(sf::st_make_valid(

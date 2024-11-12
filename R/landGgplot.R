@@ -1,18 +1,17 @@
-#' Shiny Server for ggplot Example
+#' Shiny Server for landGgplot Example
 #'
 #' @param id shiny identifier
+#' @param mainpar reactiveValue with height
 #' @param places reactive object with places
 #' @param input,output,session shiny server reactives
 #' @return reactive server
 #' @export
-#' @rdname ggplot
+#' @rdname landGgplot
 #' @importFrom shiny checkboxInput column fluidPage fluidRow mainPanel
 #'             moduleServer NS plotOutput radioButtons reactive renderPlot
 #'             sliderInput sidebarPanel titlePanel uiOutput
 #' @importFrom ggspatial annotation_map_tile
-#' @importFrom DT dataTableOutput renderDataTable
-#' @importFrom dplyr bind_rows
-ggplotServer <- function(id, places = shiny::reactive(NULL)) {
+landGgplotServer <- function(id, mainpar, places = shiny::reactive(NULL)) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
@@ -34,7 +33,8 @@ ggplotServer <- function(id, places = shiny::reactive(NULL)) {
       if(shiny::isTruthy(places()) && nrow(places())) {
         out <- ggplot_sf(color = unique(places()$color))
         if(shiny::isTruthy(input$zoomin) & shiny::isTruthy(input$osm)) {
-          # Base map from OpenStreetMap
+          # Base map from OpenStreetMap. 
+          # For other map types, see https://paleolimbot.github.io/rosm.
           out <- out +
             ggspatial::annotation_map_tile(type = "osm",
                                            zoomin = as.numeric(input$zoomin),
@@ -46,49 +46,47 @@ ggplotServer <- function(id, places = shiny::reactive(NULL)) {
       }
     })
     output$show_plot <- shiny::renderUI({
-      shiny::req(input$height)
-      shiny::plotOutput(ns("main_plot"), height = paste0(input$height, "px"))
+      shiny::req(mainpar$height)
+      shiny::plotOutput(ns("main_plot"), height = paste0(mainpar$height, "px"))
     })
   })
 }
-#' Shiny Module Input for ggplot
+#' Shiny Module Input for landGgplot
 #' @param id identifier for shiny reactive
 #' @return nothing returned
-#' @rdname ggplot
+#' @rdname landGgplot
 #' @export
-ggplotInput <- function(id) {
+landGgplotInput <- function(id) {
   ns <- shiny::NS(id)
-  shiny::tagList(
-    shiny::sliderInput(ns("height"), "Height:", 300, 800, 500, 100),
-    shiny::fluidRow(
-      shiny::column(4, shiny::checkboxInput(ns("osm"), "Geo Layer?", TRUE)),
-      shiny::column(8, shiny::uiOutput(ns("zoomin"))),
-    )
+  shiny::fluidRow(
+    shiny::column(4, shiny::checkboxInput(ns("osm"), "Geo Layer?", TRUE)),
+    shiny::column(8, shiny::uiOutput(ns("zoomin"))),
   )
 }
-#' Shiny Module Output for ggplot
+#' Shiny Module Output for landGgplot
 #' @param id identifier for shiny reactive
 #' @return nothing returned
-#' @rdname ggplot
+#' @rdname landGgplot
 #' @export
-ggplotOutput <- function(id) {
+landGgplotOutput <- function(id) {
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("show_plot"))
 }
-#' Shiny Module App for ggplot
+#' Shiny Module App for landGgplot
 #' @return nothing returned
-#' @rdname ggplot
+#' @rdname landGgplot
 #' @export
-ggplotApp <- function() {
+landGgplotApp <- function() {
   ui <- shiny::fluidPage(
-    shiny::titlePanel("Land Shapefiles"),
+    shiny::titlePanel("Land Maps"),
     shiny::sidebarPanel(
       censusInput("census"),
       nativeLandInput("nativeLand"),
-      ggplotInput("ggplot")
+      shiny::sliderInput("height", "Height:", 300, 800, 500, 100),
+      landGgplotInput("landGgplot")
     ),
     shiny::mainPanel(
-      ggplotOutput("ggplot")
+      landGgplotOutput("landGgplot")
     )
   ) 
   server <- function(input, output, session) {
@@ -96,12 +94,10 @@ ggplotApp <- function() {
     nativeLand_places <- nativeLandServer("nativeLand")
 
     places <- shiny::reactive({
-      out <- dplyr::bind_rows(census_places(), nativeLand_places())
-      # Remove possible duplication places by `Name`.
-      out[!duplicated(out$Name),]
+      order_places(nativeLand_places(), census_places())
     })
 
-    ggplotServer("ggplot", places)
+    landGgplotServer("landGgplot", input, places)
   }
   shiny::shinyApp(ui, server)
 }

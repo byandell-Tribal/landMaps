@@ -78,12 +78,13 @@ However, I was not able to obtain a key yet.
 This package includes some shiny apps that can be used to
 visualize selected Native Land territories, languages and treaties,
 and US Census AIANNH sites, states and counties.
-The last app `landPlotApp()` combines the other two.
+The last app `landMapsApp()` combines the other two, with additional
+table and thematic maps options.
 
 ```
 landMaps::nativeLandApp()
 landMaps::censusApp()
-landMaps::landPlotApp()
+landMaps::landMapsApp()
 ```
 
 ## Data Setup

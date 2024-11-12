@@ -46,7 +46,7 @@ nativeLandServer <- function(id) {
     })
     output$native_states <- shiny::renderUI({
       shiny::selectInput(ns("native_states"), "Native Lands over States:", 
-                         state.abb,
+                         datasets::state.abb,
                          multiple = TRUE)
     })
     # Find states that overlap with selected native lands.
@@ -155,15 +155,15 @@ nativeLandApp <- function() {
     shiny::titlePanel("Land Maps"),
     shiny::sidebarPanel(
       nativeLandInput("nativeLand"),
-      landPlotInput("landPlot")
+      landGgplotInput("landGgplot")
     ),
     shiny::mainPanel(
-      landPlotOutput("landPlot")
+      landGgplotOutput("landGgplot")
     )
   ) 
   server <- function(input, output, session) {
     nativeLand_places <- nativeLandServer("nativeLand")
-    landPlotServer("landPlot", nativeLand_places)
+    landGgplotServer("landGgplot", nativeLand_places)
   }
   shiny::shinyApp(ui, server)
 }
