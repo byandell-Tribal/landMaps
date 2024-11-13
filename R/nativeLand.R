@@ -1,6 +1,7 @@
 #' Shiny Server for nativeLand Example
 #'
-#' @param input,output,session shiny server reactives
+#' @param id shiny identifier
+#' @param nativeLandSlug,nativeLandUS,census_geometry static data frames
 #' @return reactive server
 #' @export
 #' @rdname nativeLand
@@ -9,7 +10,8 @@
 #'             selectInput shinyApp sidebarPanel sliderInput titlePanel uiOutput
 #' @importFrom ggplot2 facet_wrap
 #' @importFrom dplyr bind_rows distinct filter
-nativeLandServer <- function(id) {
+nativeLandServer <- function(id,
+                             nativeLandSlug, nativeLandUS, census_geometry) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
@@ -22,8 +24,7 @@ nativeLandServer <- function(id) {
       )
     })
     
-    slug <- readRDS("data/NativeLandSlug.rds")
-    slugfest <- tidyr::unite(slug, catname, sep = ", ")$catname
+    slugfest <- tidyr::unite(nativeLandSlug, catname, sep = ", ")$catname
     output$catname <- shiny::renderUI({
       shiny::selectizeInput(ns("catname"), "Category, Name:", slugfest,
                             multiple = TRUE)
@@ -31,12 +32,10 @@ nativeLandServer <- function(id) {
     
     # ** This is slow as it does `st_interaction` for every object. **
     # ** Better to consider a subset that is only in US? **
-    nativeLandUS <- readRDS("data/nativeLandUS.rds")
     nativeLand_territories <- dplyr::filter(nativeLandUS,
                                             category == "territories")
     nativeLand_treaties <- dplyr::filter(nativeLandUS,
                                          .data$category == "treaties")
-    census_geometry <- readRDS("data/census_geometry.rds")
     native_states <- shiny::reactive({
       if(!shiny::isTruthy(input$native_states))
         return(NULL)
@@ -74,7 +73,7 @@ nativeLandServer <- function(id) {
       shiny::req(input$catname, input$password)
       category <- stringr::str_remove(input$catname, ", .*$")
       name <- stringr::str_remove(input$catname, "^.*, ")
-      get_nativeLand(category, name, input$password, slug)
+      get_nativeLand(category, name, input$password, nativeLandSlug)
     })
     
     # places
@@ -151,10 +150,15 @@ nativeLandOutput <- function(id) {
 #' @rdname nativeLand
 #' @export
 nativeLandApp <- function() {
+  nativeLandSlug <- readRDS("data/NativeLandSlug.rds")
+  nativeLandUS <- readRDS("data/nativeLandUS.rds")
+  census_geometry <- readRDS("data/census_geometry.rds")
+  
   ui <- shiny::fluidPage(
     shiny::titlePanel("Land Maps"),
     shiny::sidebarPanel(
       nativeLandInput("nativeLand"),
+      shiny::sliderInput("height", "Height:", 300, 800, 500, 100),
       landGgplotInput("landGgplot")
     ),
     shiny::mainPanel(
@@ -162,8 +166,9 @@ nativeLandApp <- function() {
     )
   ) 
   server <- function(input, output, session) {
-    nativeLand_places <- nativeLandServer("nativeLand")
-    landGgplotServer("landGgplot", nativeLand_places)
+    nativeLand_places <- nativeLandServer("nativeLand",
+      nativeLandSlug, nativeLandUS, census_geometry)
+    landGgplotServer("landGgplot", input, nativeLand_places)
   }
   shiny::shinyApp(ui, server)
 }

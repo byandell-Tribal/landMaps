@@ -7,7 +7,7 @@
 \alias{censusApp}
 \title{Shiny Server for census Example}
 \usage{
-censusServer(id)
+censusServer(id, census_geometry)
 
 censusInput(id)
 
@@ -18,7 +18,7 @@ censusApp()
 \arguments{
 \item{id}{identifier for shiny reactive}
 
-\item{input, output, session}{shiny server reactives}
+\item{census_geometry}{static data frame}
 }
 \value{
 reactive server

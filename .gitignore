@@ -53,5 +53,6 @@ rsconnect/
 Images/
 *.cache/
 data/
-inst/
+inst/misc
+inst/shinyApp/data
 *.html

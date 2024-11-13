@@ -1,18 +1,20 @@
 #' Shiny Server for landMaps Package
 #'
 #' @param id shiny identifier
-#' @param input,output,session shiny server reactives
+#' @param nativeLandSlug,nativeLandUS,census_geometry static data frames
 #' @return reactive server
 #' @export
 #' @rdname landMaps
 #' @importFrom shiny fluidPage mainPanel moduleServer NS radioButtons reactive 
 #'             req sidebarPanel tagList titlePanel 
-landMapsServer <- function(id) {
+landMapsServer <- function(id,
+                           nativeLandSlug, nativeLandUS, census_geometry) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    census_places <- censusServer("census")
-    nativeLand_places <- nativeLandServer("nativeLand")
+    census_places <- censusServer("census", census_geometry)
+    nativeLand_places <- nativeLandServer("nativeLand",
+      nativeLandSlug, nativeLandUS, census_geometry)
     
     places <- shiny::reactive({
       order_places(nativeLand_places(), census_places())
@@ -68,6 +70,10 @@ landMapsOutput <- function(id) {
 #' @rdname landMaps
 #' @export
 landMapsApp <- function() {
+  nativeLandSlug <- readRDS("data/NativeLandSlug.rds")
+  nativeLandUS <- readRDS("data/nativeLandUS.rds")
+  census_geometry <- readRDS("data/census_geometry.rds")
+  
   ui <- shiny::fluidPage(
     shiny::titlePanel("Land Maps"),
     shiny::sidebarPanel(
@@ -78,7 +84,8 @@ landMapsApp <- function() {
     )
   ) 
   server <- function(input, output, session) {
-    landMapsServer("landMaps")
+    landMapsServer("landMaps",
+      nativeLandSlug, nativeLandUS, census_geometry)
   }
   shiny::shinyApp(ui, server)
 }

@@ -1,6 +1,7 @@
 #' Shiny Server for census Example
 #'
-#' @param input,output,session shiny server reactives
+#' @param id shiny identifier
+#' @param census_geometry static data frame
 #' @return reactive server
 #' @export
 #' @rdname census
@@ -10,11 +11,10 @@
 #'             titlePanel uiOutput updateSelectizeInput
 #' @importFrom stringr str_detect
 #' @importFrom dplyr arrange filter
-censusServer <- function(id) {
+censusServer <- function(id, census_geometry) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    census_geometry <- readRDS("data/census_geometry.rds")
     census_names <- tidyr::unite(census_geometry, catname, 
                                  category, Name, sep = ": ")$catname
     output$catname <- shiny::renderUI({
@@ -120,10 +120,13 @@ censusOutput <- function(id) {
 #' @rdname census
 #' @export
 censusApp <- function() {
+  census_geometry <- readRDS("data/census_geometry.rds")
+  
   ui <- shiny::fluidPage(
     shiny::titlePanel("Census Maps"),
     shiny::sidebarPanel(
       censusInput("census"),
+      shiny::sliderInput("height", "Height:", 300, 800, 500, 100),
       landGgplotInput("landGgplot")
     ),
     shiny::mainPanel(
@@ -131,8 +134,8 @@ censusApp <- function() {
     )
   )
   server <- function(input, output, session) {
-    census_places <- censusServer("census")
-    landGgplotServer("landGgplot", census_places)
+    census_places <- censusServer("census", census_geometry)
+    landGgplotServer("landGgplot", input, census_places)
   }
   shiny::shinyApp(ui, server)
 }

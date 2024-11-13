@@ -87,6 +87,20 @@ landMaps::censusApp()
 landMaps::landMapsApp()
 ```
 
+Alternatively, there is a `shinyApp` folder in `inst` enabling one to do
+
+```
+runApp('inst/shinyApp')
+```
+
+However, one first has to create a `data` folder in that directory with
+the needed files or (at Terminal) do the following once:
+
+```
+cd inst/shinyApp
+ln -s ../../data .
+```
+
 ## Data Setup
 
 You will need to paste in your `native-land` key to use,
