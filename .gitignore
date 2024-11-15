@@ -56,3 +56,5 @@ data/
 inst/misc
 inst/shinyApp/data
 *.html
+*_files/
+*.pdf

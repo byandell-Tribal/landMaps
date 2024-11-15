@@ -8,7 +8,8 @@ ui <- shiny::fluidPage(
     landMapsInput("landMaps")
   ),
   shiny::mainPanel(
-    landMapsOutput("landMaps")
+    landMapsOutput("landMaps"),
+    landMapsUI("landMaps")
   )
 ) 
 server <- function(input, output, session) {

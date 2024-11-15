@@ -6,8 +6,9 @@
 #' @export
 #' @rdname nativeLand
 #' @importFrom shiny a checkboxInput column fluidPage fluidRow h4 isTruthy
-#'             mainPanel moduleServer NS plotOutput renderPlot renderUI
-#'             selectInput shinyApp sidebarPanel sliderInput titlePanel uiOutput
+#'             mainPanel moduleServer NS observeEvent plotOutput renderPlot
+#'             renderUI selectInput shinyApp sidebarPanel sliderInput titlePanel
+#'             uiOutput updateSelectizeInput
 #' @importFrom ggplot2 facet_wrap
 #' @importFrom dplyr bind_rows distinct filter
 nativeLandServer <- function(id,
@@ -24,10 +25,18 @@ nativeLandServer <- function(id,
       )
     })
     
-    slugfest <- tidyr::unite(nativeLandSlug, catname, sep = ", ")$catname
+    catnames <- shiny::reactive({
+      dplyr::pull(tidyr::unite(nativeLandSlug, catname, sep = ", "), catname)
+    })
     output$catname <- shiny::renderUI({
-      shiny::selectizeInput(ns("catname"), "Category, Name:", slugfest,
+      shiny::selectizeInput(ns("catname"), "Category, Name:", NULL,
                             multiple = TRUE)
+    })
+    shiny::observeEvent(
+      shiny::req(catnames()),
+      {
+        shiny::updateSelectizeInput(session, "catname", choices = catnames(),
+                                    server = TRUE, selected = input$catname)
     })
     
     # ** This is slow as it does `st_interaction` for every object. **

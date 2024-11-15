@@ -7,7 +7,7 @@
 \alias{nativeLandApp}
 \title{Shiny Server for nativeLand Example}
 \usage{
-nativeLandServer(id)
+nativeLandServer(id, nativeLandSlug, nativeLandUS, census_geometry)
 
 nativeLandInput(id)
 
@@ -18,7 +18,7 @@ nativeLandApp()
 \arguments{
 \item{id}{identifier for shiny reactive}
 
-\item{input, output, session}{shiny server reactives}
+\item{nativeLandSlug, nativeLandUS, census_geometry}{static data frames}
 }
 \value{
 reactive server

@@ -1,0 +1,40 @@
+---
+title: "landMaps"
+author: "Brian Yandell"
+format: dashboard
+server: shiny
+editor: visual
+---
+
+```{r}
+#| context: setup
+nativeLandSlug <- readRDS("data/NativeLandSlug.rds")
+nativeLandUS <- readRDS("data/nativeLandUS.rds")
+census_geometry <- readRDS("data/census_geometry.rds")
+```
+
+#  {.sidebar}
+
+```{r}
+landMaps::landMapsInput("landMaps")
+```
+
+# Main Panel
+
+## {height="70%"}
+
+```{r}
+landMaps::landMapsOutput("landMaps")
+```
+
+## {height="30%"}
+
+```{r}
+landMaps::landMapsUI("landMaps")
+```
+
+```{r}
+#| context: server
+landMaps::landMapsServer("landMaps",
+                         nativeLandSlug, nativeLandUS, census_geometry)
+```

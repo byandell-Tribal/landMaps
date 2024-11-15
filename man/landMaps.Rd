@@ -4,24 +4,29 @@
 \alias{landMapsServer}
 \alias{landMapsInput}
 \alias{landMapsOutput}
+\alias{landMapsUI}
 \alias{landMapsApp}
 \title{Shiny Server for landMaps Package}
 \usage{
-landMapsServer(id)
+landMapsServer(id, nativeLandSlug, nativeLandUS, census_geometry)
 
 landMapsInput(id)
 
 landMapsOutput(id)
+
+landMapsUI(id)
 
 landMapsApp()
 }
 \arguments{
 \item{id}{identifier for shiny reactive}
 
-\item{input, output, session}{shiny server reactives}
+\item{nativeLandSlug, nativeLandUS, census_geometry}{static data frames}
 }
 \value{
 reactive server
+
+nothing returned
 
 nothing returned
 
@@ -35,6 +40,8 @@ Shiny Server for landMaps Package
 Shiny Module Input for landMaps
 
 Shiny Module Output for landMaps
+
+Shiny Module UI for landMaps
 
 Shiny Module App for landMaps
 }

@@ -61,9 +61,16 @@ landMapsInput <- function(id) {
 #' @export
 landMapsOutput <- function(id) {
   ns <- shiny::NS(id)
-  shiny::tagList(
-    shiny::uiOutput(ns("landPlot")),
-    landTableOutput(ns("landTable")))
+  shiny::uiOutput(ns("landPlot"))
+}
+#' Shiny Module UI for landMaps
+#' @param id identifier for shiny reactive
+#' @return nothing returned
+#' @rdname landMaps
+#' @export
+landMapsUI <- function(id) {
+  ns <- shiny::NS(id)
+  landTableOutput(ns("landTable"))
 }
 #' Shiny Module App for landMaps
 #' @return nothing returned
@@ -80,7 +87,8 @@ landMapsApp <- function() {
       landMapsInput("landMaps")
     ),
     shiny::mainPanel(
-      landMapsOutput("landMaps")
+      landMapsOutput("landMaps"),
+      landMapsUI("landMaps")
     )
   ) 
   server <- function(input, output, session) {
