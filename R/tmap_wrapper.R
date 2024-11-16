@@ -6,6 +6,11 @@
 #' @importFrom tmap tm_fill tm_lines tm_shape
 #' @importFrom sf st_cast
 tmap_wrapper <- function(object) {
+  # Reduce levels of `category` to those found in `object`.
+  categories <- levels(object$category)
+  categories <- categories[!is.na(match(categories, object$category))]
+  object <- dplyr::mutate(object, category = factor(category, categories))
+  # Split `object` by `category` to do Thematic Maps.
   object <- split(object, object$category)
   p <- NULL
   for(category in names(object)) {

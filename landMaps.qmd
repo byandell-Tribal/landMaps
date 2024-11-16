@@ -1,5 +1,5 @@
 ---
-title: "landMaps"
+title: "landMaps Quarto"
 author: "Brian Yandell"
 format: dashboard
 server: shiny
@@ -21,13 +21,13 @@ landMaps::landMapsInput("landMaps")
 
 # Main Panel
 
-## {height="70%"}
+##  {height="70%"}
 
 ```{r}
 landMaps::landMapsOutput("landMaps")
 ```
 
-## {height="30%"}
+##  {height="30%"}
 
 ```{r}
 landMaps::landMapsUI("landMaps")

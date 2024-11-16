@@ -2,6 +2,11 @@
 
 export(censusApp)
 export(censusInput)
+export(censusMapsApp)
+export(censusMapsInput)
+export(censusMapsOutput)
+export(censusMapsServer)
+export(censusMapsUI)
 export(censusOutput)
 export(censusServer)
 export(census_url)
