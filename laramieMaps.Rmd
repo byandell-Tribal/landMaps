@@ -18,7 +18,11 @@ In there, the
 is stored.
 Below, calls to `readRDS("data/*.rds)` bring up saved files.
 
-The new Fort Laramie geojson files 
+The new Fort Laramie geojson files come from
+
+- <https://sicangudata.org/repository/a/1851_treaty_bounds>
+- <https://sicangudata.org/repository/a/1868_treaty_bounds>
+
 
 ```{r}
 nativeLandKey <- readRDS("data/nativeLandKey.rds")
