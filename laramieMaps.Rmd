@@ -1,0 +1,177 @@
+---
+title: "NativeLand"
+author: "Brian Yandell"
+date: "2024-10-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+knitr::opts_knit$set(root.dir = ".")
+```
+
+This Rmarkdown file assumes that 
+[nativeLandSetup.Rmd](https://github.com/byandell-envsys/landMaps/blob/main/nativeLandSetup.Rmd)
+has been used to set up files.
+In there, the
+[native-land.ca API key](https://native-land.ca/resources/api-docs/)
+is stored.
+Below, calls to `readRDS("data/*.rds)` bring up saved files.
+
+The new Fort Laramie geojson files 
+
+```{r}
+nativeLandKey <- readRDS("data/nativeLandKey.rds")
+```
+
+## Fort Laramie Treaties from `native-land.ca`
+
+```{r}
+nativeLandUS <- readRDS("data/nativeLandUS.rds")
+```
+
+```{r}
+laramieNL <- nativeLandUS[grepl("laramie", nativeLandUS$Slug),]
+```
+
+```{r eval=FALSE, warning = FALSE, message = FALSE}
+landMaps::ggplot_sf(color = laramieNL$color) + 
+  ggspatial::annotation_map_tile(type = "osm", zoomin = -1) +
+  landMaps::ggplot_layer_sf(laramieNL) +
+  landMaps::ggplot_layer_name(laramieNL) +
+  ggplot2::ggtitle("native-land.ca Fort Laramie 1851 & 1868")
+```
+
+## Fort Laramie Treaties from `Ramadda`
+
+```{r warning=FALSE}
+laramieRamadda <- dplyr::bind_rows(
+  "1851" = sf::st_read("data/1851_treaty_bounds.geojson") |>
+    dplyr::mutate(color = "darkgreen"),
+  "1868" = sf::st_read("data/1868_treaty_boundaries.geojson") |>
+    dplyr::mutate(color = "darkblue"),
+  .id = "Name") |>
+  dplyr::select(-name) |>
+  sf::st_make_valid()
+laramie1851 <- dplyr::filter(laramieRamadda, Name == "1851")
+laramie1868 <- dplyr::filter(laramieRamadda, Name == "1868")
+```
+
+```{r eval=FALSE, warning = FALSE, message = FALSE}
+landMaps::ggplot_sf(color = c(laramieNL$color, laramieRamadda$color)) + 
+  ggspatial::annotation_map_tile(type = "osm", zoomin = -1) +
+  landMaps::ggplot_layer_sf(laramieNL) +
+  landMaps::ggplot_layer_sf(laramieRamadda) +
+  landMaps::ggplot_layer_name(laramieNL) +
+  landMaps::ggplot_layer_name(laramieRamadda) +
+  ggplot2::ggtitle("native-land.ca Fort Laramie 1851 & 1868")
+```
+
+## Other Cessions from `native-land.ca`
+
+### 1851 Laramie Treaty
+
+```{r warning = FALSE, message = FALSE}
+cessions_1851 <- landMaps:::cession_intersection(nativeLandUS, laramie1851)
+landMaps::ggplot_cession(laramie1851, cessions_1851,
+                         "Laramie 1851 & Cessions")
+```
+
+```{r}
+landMaps::tmap_cession(laramie1851, cessions_1851)
+```
+
+```{r warning = FALSE, message = FALSE}
+cessions_1851_expand <- landMaps::cession_expand(cessions_1851, nativeLandUS)
+landMaps::ggplot_cession(laramie1851, cessions_1851_expand, 
+                         "Expanded Laramie 1851 & Cessions")
+```
+
+```{r}
+landMaps::tmap_cession(laramie1851, cessions_1851_expand)
+```
+
+### 1868 Laramie Treaty
+
+```{r warning = FALSE, message = FALSE}
+cessions_1868 <- landMaps:::cession_intersection(nativeLandUS, laramie1868)
+landMaps::ggplot_cession(laramie1868, cessions_1868, "Laramie 1868 & Cessions")
+```
+
+```{r}
+landMaps::tmap_cession(laramie1868, cessions_1868)
+```
+
+```{r warning = FALSE, message = FALSE}
+cessions_1868_expand <- landMaps::cession_expand(cessions_1868, nativeLandUS)
+landMaps::ggplot_cession(laramie1868, cessions_1868_expand, "Expanded Laramie 1868 & Cessions")
+```
+
+```{r}
+landMaps::tmap_cession(laramie1868, cessions_1868_expand)
+```
+
+### Look only at Cession 701
+
+```{r}
+landMaps::ggplot_cession(
+  dplyr::filter(cessions_1868_expand, Name == "701"),
+  dplyr::filter(census_geometry, 
+                grepl("Rosebud", Name),
+                category == "aiannh"))
+```
+
+```{r}
+knitr::knit_exit()
+```
+
+## Looking at SD Tribes
+
+```{r}
+census_sf <- readRDS("data/census_geometry.rds")
+```
+
+```{r}
+sdTribes <- c("Rosebud", "Pine Ridge", "Crow Creek", "Cheyenne River",
+              "Lower Brule", "Santee Reservation", "Standing Rock",
+              "Yankton", "Flandreau")
+sd_tribes <- 
+  dplyr::filter(census_sf,
+                grepl(paste(sdTribes, collapse = "|"), .data$Name),
+                category == "aiannh")
+```
+
+```{r warning = FALSE, message = FALSE}
+landMaps::ggplot_sf(color = c(sd_tribes$color, cessions$color,
+                              laramieRamadda$color)) + 
+  ggspatial::annotation_map_tile(type = "osm", zoomin = -1) +
+  landMaps::ggplot_layer_sf(sd_tribes) +
+  landMaps::ggplot_layer_sf(cessions) +
+  landMaps::ggplot_layer_name(cessions) +
+  landMaps::ggplot_layer_name(sd_tribes) +
+  ggplot2::ggtitle("native-land.ca Fort Laramie 1851 & 1868")
+```
+
+```{r warning = FALSE, message = FALSE}
+landMaps::ggplot_sf(color = c(sd_tribes$color, cessions$color,
+                              laramieRamadda$color)) + 
+  ggspatial::annotation_map_tile(type = "osm", zoomin = -1) +
+#  landMaps::ggplot_layer_sf(sd_tribes) +
+  landMaps::ggplot_layer_sf(cessions) +
+  landMaps::ggplot_layer_name(cessions) +
+  landMaps::ggplot_layer_sf(laramieRamadda) +
+  landMaps::ggplot_layer_name(laramieRamadda) +
+  ggplot2::ggtitle("native-land.ca Fort Laramie 1851 & 1868")
+```
+
+```{r}
+places <- landMaps:::order_places(laramieRamadda, cessions) |>
+  dplyr::mutate(category = factor(Name, unique(Name)))
+```
+
+```{r}
+tmap::tmap_mode("view")
+landMaps::tmap_wrapper(places)
+```
+
+

@@ -49,11 +49,14 @@ union_us <- function(census_geometry) {
   sf::st_sf(us)
 }
 # Reduce `result_sf` by intersection with `land_sf`.
-intersect_sf <- function(result_sf, land_sf) {
+intersect_sf <- function(result_sf, land_sf, expand = FALSE) {
   
   # Now take union over `land_sf` to reduce to one geometry.
   land_sf <- sf::st_sf(sf::st_union(land_sf))
   
+  # Keep each row of `result_sf` that intersects `land_sf`.
+  # Seems to have to do this row by row.
+  # Reduce `geometry` to the intersection.
   object <- list()
   options(warn = -1)
   on.exit(options(warn = 0))
@@ -71,5 +74,11 @@ intersect_sf <- function(result_sf, land_sf) {
       object[[i]] <- out
     }
   }
-  dplyr::bind_rows(object[!is.na(object)])
+  object <- dplyr::bind_rows(object[!is.na(object)])
+  
+  # If `expand` use full `result_sf` geometry per row.
+  if(expand) {
+    object <- dplyr::filter(result_sf, .data$Name %in% object$Name)
+  }
+  object
 }
