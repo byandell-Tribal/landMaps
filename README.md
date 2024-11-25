@@ -1,7 +1,7 @@
-# landMaps
+# landmapr
 
 Read land maps as simple features and display in various ways.
-This repo includes an R package `landMaps` that was inspired by the
+This repo includes an R package `landmapr` that was inspired by the
 python-based
 [Earth Data Analytics](https://github.com/byandell-envsys/EarthDataAnalytics)
 course from
@@ -41,7 +41,7 @@ multispectral imaging.
 To install this package:
 
 ```
-devtools::install_github("byandell-envsys/landMaps")
+devtools::install_github("byandell-envsys/landmapr")
 ```
 
 It uses the
@@ -78,13 +78,13 @@ However, I was not able to obtain a key yet.
 This package includes some shiny apps that can be used to
 visualize selected Native Land territories, languages and treaties,
 and US Census AIANNH sites, states and counties.
-The last app `landMapsApp()` combines the other two, with additional
+The last app `landmaprApp()` combines the other two, with additional
 table and thematic maps options.
 
 ```
-landMaps::nativeLandApp()
-landMaps::censusApp()
-landMaps::landMapsApp()
+landmapr::nativeLandApp()
+landmapr::censusApp()
+landmapr::landmaprApp()
 ```
 
 Alternatively, there is a `shinyApp` folder in `inst` enabling one to do
@@ -111,13 +111,13 @@ folder) to respect the sovereignty of these data.
 
 For more details on data setup, see
 
-- [nativeLandSetup.Rmd](https://github.com/byandell-envsys/landMaps/blob/main/nativeLandSetup.Rmd)
-- [censusSetup.Rmd](https://github.com/byandell-envsys/landMaps/blob/main/censusSetup.Rmd)
+- [nativeLandSetup.Rmd](https://github.com/byandell-envsys/landmapr/blob/main/nativeLandSetup.Rmd)
+- [censusSetup.Rmd](https://github.com/byandell-envsys/landmapr/blob/main/censusSetup.Rmd)
 
 The additional Rmarkdown files 
 
-- [nativeLand.Rmd)](https://github.com/byandell-envsys/landMaps/blob/main/nativeLand.Rmd)
-- [census.Rmd)](https://github.com/byandell-envsys/landMaps/blob/main/census.Rmd)
+- [nativeLand.Rmd)](https://github.com/byandell-envsys/landmapr/blob/main/nativeLand.Rmd)
+- [census.Rmd)](https://github.com/byandell-envsys/landmapr/blob/main/census.Rmd)
 
 include some package function examples.
 
