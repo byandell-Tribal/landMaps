@@ -49,7 +49,7 @@ if(file.exists(filename <- "data/census_geometry.rds")) {
       category = factor(.data$category, c("counties", "states", "aiannh")))
   
   # Create `description` as URL to Census Information.
-  census_geometry <- landMaps::census_url(census_geometry)
+  census_geometry <- landmapr::census_url(census_geometry)
   
   saveRDS(census_geometry, filename)
 }

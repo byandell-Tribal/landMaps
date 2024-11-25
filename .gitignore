@@ -58,3 +58,4 @@ inst/shinyApp/data
 *.html
 *_files/
 *.pdf
+.DS_Store

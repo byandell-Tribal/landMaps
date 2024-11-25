@@ -13,7 +13,7 @@ See
 
 - <https://walker-data.com/tidycensus/articles/basic-usage.html>
 - <https://rpubs.com/kitadasmalley/getACSVars>
-- [US Census Maps Data Setup](https://github.com/byandell-envsys/landMaps/blob/main/censusSetup.Rmd)
+- [US Census Maps Data Setup](https://github.com/byandell-envsys/landmapr/blob/main/censusSetup.Rmd)
 )
 
 ```{r}
@@ -33,7 +33,7 @@ ggplot2::ggplot() +
   # Base map from OpenStreetMap
   ggspatial::annotation_map_tile(type = "osm", zoomin = -1,
                                  progress = "none") +
-  landMaps::ggplot_layer_sf(sd)
+  landmapr::ggplot_layer_sf(sd)
 ```
 
 ## Tribes overlapping South Dakota
@@ -49,19 +49,19 @@ sd_tribes <-
 ```
 
 ```{r}
-landMaps::ggplot_sf() +
+landmapr::ggplot_sf() +
   # Base map from OpenStreetMap
   ggspatial::annotation_map_tile(type = "osm", zoomin = -1,
                                  progress = "none") +
-  landMaps:::ggplot_layer_sf(sd_tribes, fill = "transparent")
+  landmapr:::ggplot_layer_sf(sd_tribes, fill = "transparent")
 ```
 
 ```{r}
-landMaps::ggplot_sf() +
+landmapr::ggplot_sf() +
   # Base map from OpenStreetMap
   ggspatial::annotation_map_tile(type = "osm", zoomin = 0,
                                  progress = "none") +
-  landMaps:::ggplot_layer_sf(
+  landmapr:::ggplot_layer_sf(
     dplyr::filter(sd_tribes, grepl("Pine Ridge", Name)),
     fill = "transparent")
 ```
@@ -78,8 +78,8 @@ nativeLandUS <- readRDS("data/nativeLandUS.rds")
 
 ```{r}
 object <- dplyr::filter(census_geometry, category == "states")
-p_states <- landMaps::ggplot_sf(color = c(census_geometry$color, nativeLandUS$color)) +
-  landMaps:::ggplot_layer_sf(object)
+p_states <- landmapr::ggplot_sf(color = c(census_geometry$color, nativeLandUS$color)) +
+  landmapr:::ggplot_layer_sf(object)
 ```
 
 ```{r}
@@ -89,7 +89,7 @@ p_states +
 ```
 
 ```{r}
-p_states + landMaps:::ggplot_layer_sf(sd_tribes, fill = "green") +
+p_states + landmapr:::ggplot_layer_sf(sd_tribes, fill = "green") +
   ggplot2::coord_sf(xlim = bbox_sd_tribes[c("xmin","xmax")] + c(-1,1),
                     ylim = bbox_sd_tribes[c("ymin","ymax")] + c(-1,1))
 ```
@@ -97,11 +97,11 @@ p_states + landMaps:::ggplot_layer_sf(sd_tribes, fill = "green") +
 
 ```{r warning = FALSE}
 nativeLandKey <- readRDS("data/nativeLandKey.rds")
-oceti <- landMaps::get_nativeLand("territories", "oceti-sakowin-sioux",
+oceti <- landmapr::get_nativeLand("territories", "oceti-sakowin-sioux",
                            nativeLandKey)
-landMaps::ggplot_sf(color = oceti$color) +
+landmapr::ggplot_sf(color = oceti$color) +
   ggspatial::annotation_map_tile(type = "osm", zoomin = -1, progress = "none") +
-  landMaps::ggplot_layer_sf(oceti)
+  landmapr::ggplot_layer_sf(oceti)
 ```
 
 ```{r}
@@ -113,17 +113,17 @@ p_states +
 
 ```{r warning = FALSE}
 p_states + 
-  landMaps::ggplot_layer_sf(oceti) +
-  landMaps::ggplot_layer_name(oceti) +
+  landmapr::ggplot_layer_sf(oceti) +
+  landmapr::ggplot_layer_name(oceti) +
   ggplot2::coord_sf(xlim = bbox_oceti[c("xmin","xmax")],
                     ylim = bbox_oceti[c("ymin","ymax")])
 ```
 
 ```{r}
 p_states +
-  landMaps::ggplot_layer_sf(oceti) +
-  landMaps::ggplot_layer_name(oceti) +
-  landMaps:::ggplot_layer_sf(sd_tribes, fill = "green") +
+  landmapr::ggplot_layer_sf(oceti) +
+  landmapr::ggplot_layer_name(oceti) +
+  landmapr:::ggplot_layer_sf(sd_tribes, fill = "green") +
     ggplot2::coord_sf(xlim = bbox_oceti[c("xmin","xmax")],
                       ylim = bbox_oceti[c("ymin","ymax")])
 ```
@@ -150,8 +150,8 @@ wi_tribes <-
 ```
 
 ```{r}
-landMaps::ggplot_sf() +
-  landMaps:::ggplot_layer_sf(wi_tribes, fill = "green")
+landmapr::ggplot_sf() +
+  landmapr:::ggplot_layer_sf(wi_tribes, fill = "green")
 ```
 
 ```{r}
@@ -162,7 +162,7 @@ bbox_wi <- sf::st_bbox(
 
 ```{r}
 p_states + 
-  landMaps:::ggplot_layer_sf(wi_tribes, fill = "green") +
+  landmapr:::ggplot_layer_sf(wi_tribes, fill = "green") +
   ggplot2::coord_sf(xlim = bbox_wi[c("xmin","xmax")],
                     ylim = bbox_wi[c("ymin","ymax")])
 ```

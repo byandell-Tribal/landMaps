@@ -53,10 +53,10 @@ cession_places <- function(cessions = NULL, treaty = NULL) {
 #' @export
 ggplot_cession <- function(cessions, treaty = NULL, title = "") {
   places <- cession_places(cessions, treaty)
-  landMaps::ggplot_sf(color = places$color) + 
+  ggplot_sf(color = places$color) + 
     ggspatial::annotation_map_tile(type = "osm", zoomin = -1) +
-    landMaps::ggplot_layer_sf(places) +
-    landMaps::ggplot_layer_name(places) +
+    ggplot_layer_sf(places) +
+    ggplot_layer_name(places) +
     ggplot2::ggtitle(title)
   
 }
@@ -71,5 +71,5 @@ ggplot_cession <- function(cessions, treaty = NULL, title = "") {
 tmap_cession <- function(cessions, treaty = NULL) {
   places <- cession_places(cessions, treaty)
   tmap::tmap_mode("view")
-  landMaps::tmap_wrapper(places)
+  tmap_wrapper(places)
 }

@@ -13,7 +13,7 @@ knitr::opts_knit$set(root.dir = ".")
 ## Native Land Local Data Setup
 
 This Rmarkdown file assumes that 
-[censusSetup.Rmd](https://github.com/byandell-envsys/landMaps/blob/main/censusSetup.Rmd)
+[censusSetup.Rmd](https://github.com/byandell-envsys/landmapr/blob/main/censusSetup.Rmd)
 has been already used to set up US Census files.
 
 The
@@ -51,11 +51,11 @@ if(file.exists(filename <- "data/NativeLandData.rds")) {
   nativeLandData <- readRDS(filename)
 } else {
   nativeLandData <- dplyr::bind_rows(
-    territories = landMaps::features_reform(
+    territories = landmapr::features_reform(
       rjson::fromJSON(file = "data/territories")$features),
-    languages   = landMaps::features_reform(
+    languages   = landmapr::features_reform(
       rjson::fromJSON(file = "data/languages")$features),
-    treaties    = landMaps::features_reform(
+    treaties    = landmapr::features_reform(
       rjson::fromJSON(file = "data/treaties")$features),
     .id = "category")
   sf::st_crs(nativeLandData) <- 4326
@@ -80,7 +80,7 @@ if(file.exists(filename <- "data/NativeLandSlug.rds")) {
 ```
 
 This `Slug` file is saved locally, and used in the shiny app
-[landMaps::nativeLandApp()](https://github.com/byandell-envsys/landMaps/blob/main/R/nativeLand.R).
+[landmapr::nativeLandApp()](https://github.com/byandell-envsys/landmapr/blob/main/R/nativeLand.R).
 However, it is not saved to github.
 As constructed, it include only the `category` and `Slug`
 columns from
@@ -96,7 +96,7 @@ census_geometry <- readRDS("data/census_geometry.rds")
 if(file.exists(filename <- "data/NativeLandUS.rds")) {
   nativeLandUS <- readRDS(filename)
 } else {
-  nativeLandUS <- landMaps:::nativeLand_us(nativeLandData, census_geometry)
+  nativeLandUS <- landmapr:::nativeLand_us(nativeLandData, census_geometry)
   saveRDS(nativeLandUS, "data/nativeLandUS.rds")
 }
 ```

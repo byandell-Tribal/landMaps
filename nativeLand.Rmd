@@ -29,7 +29,7 @@ R libraries, as well as
 [tidyverse](https://www.tidyverse.org/).
 
 This Rmarkdown file assumes that 
-[nativeLandSetup.Rmd](https://github.com/byandell-envsys/landMaps/blob/main/nativeLandSetup.Rmd)
+[nativeLandSetup.Rmd](https://github.com/byandell-envsys/landmapr/blob/main/nativeLandSetup.Rmd)
 has been used to set up files.
 In there, the
 [native-land.ca API key](https://native-land.ca/resources/api-docs/)
@@ -60,7 +60,7 @@ nativeLandSlug <- readRDS("data/NativeLandSlug.rds")
 ```
 
 This file is saved locally, and used in the shiny app
-[landMaps::nativeLandApp()](https://github.com/byandell-envsys/landMaps/blob/main/R/nativeLand.R).
+[landmapr::nativeLandApp()](https://github.com/byandell-envsys/landmapr/blob/main/R/nativeLand.R).
 However, it is not saved to github.
 As constructed, it include only the `category` and `Slug`
 columns from
@@ -90,28 +90,28 @@ oceti_sakowin <- nativeLandUS[tmp,]
 ```
 
 ```{r warning = FALSE}
-landMaps::ggplot_sf(color = oceti_sakowin$color) + 
-  landMaps::ggplot_layer_sf(oceti_sakowin) +
-  landMaps::ggplot_layer_name(oceti_sakowin) +
+landmapr::ggplot_sf(color = oceti_sakowin$color) + 
+  landmapr::ggplot_layer_sf(oceti_sakowin) +
+  landmapr::ggplot_layer_name(oceti_sakowin) +
   ggplot2::ggtitle("Oceti Sakowin")
 ```
 
 Add base map from OpenStreetMap
 
 ```{r}
-landMaps::ggplot_sf(color = oceti_sakowin$color) + 
+landmapr::ggplot_sf(color = oceti_sakowin$color) + 
   ggspatial::annotation_map_tile(type = "osm", zoomin = -1) +
-  landMaps::ggplot_layer_sf(oceti_sakowin) +
-  landMaps::ggplot_layer_name(oceti_sakowin) +
+  landmapr::ggplot_layer_sf(oceti_sakowin) +
+  landmapr::ggplot_layer_name(oceti_sakowin) +
   ggplot2::ggtitle("Oceti Sakowin")
 
 ```
 
 ```{r}
-landMaps::ggplot_sf(color = oceti_sakowin$color) + 
+landmapr::ggplot_sf(color = oceti_sakowin$color) + 
   ggspatial::annotation_map_tile(type = "osm", zoomin = -1) +
-  landMaps::ggplot_layer_sf(oceti_sakowin) +
-  landMaps::ggplot_layer_name(oceti_sakowin) +
+  landmapr::ggplot_layer_sf(oceti_sakowin) +
+  landmapr::ggplot_layer_name(oceti_sakowin) +
   ggplot2::ggtitle("Oceti Sakowin") +
   ggplot2::facet_wrap(~ category)
 ```
@@ -124,9 +124,9 @@ menominee <- dplyr::filter(nativeLandData,
 ```
 
 ```{r warning=FALSE}
-landMaps::ggplot_sf(color = menominee$color) + 
+landmapr::ggplot_sf(color = menominee$color) + 
   ggspatial::annotation_map_tile(type = "osm", zoomin = -1) +
-  landMaps::ggplot_layer_sf(menominee) +
+  landmapr::ggplot_layer_sf(menominee) +
   ggplot2::ggtitle("Menominee")
 ```
 
@@ -137,23 +137,23 @@ The challenge is you need to know the Slug exactly,
 or use a lookup data frame such as `nativeLandSlug`.
 
 ```{r}
-landMaps::get_nativeLand("territories", "oceti", nativeLandKey)
+landmapr::get_nativeLand("territories", "oceti", nativeLandKey)
 ```
 
 ```{r warning = FALSE}
-landMaps::ggplot_sf(color = "blue") + 
+landmapr::ggplot_sf(color = "blue") + 
   ggspatial::annotation_map_tile(type = "osm", zoomin = -1) +
-  landMaps::ggplot_layer_sf(
-    landMaps::get_nativeLand("territories", "oceti-sakowin-sioux",
+  landmapr::ggplot_layer_sf(
+    landmapr::get_nativeLand("territories", "oceti-sakowin-sioux",
                              nativeLandKey)) +
   ggplot2::ggtitle("Oceti Sakowin")
 ```
 
 ```{r warning = FALSE}
-landMaps::ggplot_sf(color = "blue") + 
+landmapr::ggplot_sf(color = "blue") + 
   ggspatial::annotation_map_tile(type = "osm", zoomin = -1) +
-  landMaps::ggplot_layer_sf(
-    landMaps::get_nativeLand("territories", "oceti",
+  landmapr::ggplot_layer_sf(
+    landmapr::get_nativeLand("territories", "oceti",
                              nativeLandKey, nativeLandSlug)) +
   ggplot2::ggtitle("Oceti Sakowin")
 ```
@@ -216,11 +216,11 @@ if(file.exists(filename <- "data/nl_bbox_mnwimi.rds")) {
 ```
 
 ```{r warning = FALSE}
-landMaps::ggplot_sf(color = c(nl_bbox_mnwimi$color, census_geometry$color)) + 
+landmapr::ggplot_sf(color = c(nl_bbox_mnwimi$color, census_geometry$color)) + 
   ggspatial::annotation_map_tile(type = "osm", zoomin = -1) +
-  landMaps::ggplot_layer_sf(nl_bbox_mnwimi) +
+  landmapr::ggplot_layer_sf(nl_bbox_mnwimi) +
   ggplot2::ggtitle("Native Land in MN/WI/MI") +
-  landMaps:::ggplot_layer_sf(
+  landmapr:::ggplot_layer_sf(
     dplyr::filter(census_geometry, category == "states",
                   Name %in% c("Wisconsin", "Minnesota", "Michigan")))
 ```
@@ -232,11 +232,11 @@ nl_mnwimi <- dplyr::filter(nativeLandUS, Name %in% nl_bbox_mnwimi$Name)
 ```
 
 ```{r warning = FALSE}
-landMaps::ggplot_sf(color = c(nl_mnwimi$color, census_geometry$color)) +
+landmapr::ggplot_sf(color = c(nl_mnwimi$color, census_geometry$color)) +
   ggspatial::annotation_map_tile(type = "osm", zoomin = -1, progress = "none") +
-  landMaps::ggplot_layer_sf(nl_mnwimi) +
+  landmapr::ggplot_layer_sf(nl_mnwimi) +
   ggplot2::ggtitle("Native Land in MN/WI/MI") +
-  landMaps:::ggplot_layer_sf(
+  landmapr:::ggplot_layer_sf(
     dplyr::filter(census_geometry, category == "states",
                   Name %in% c("Wisconsin", "Minnesota", "Michigan"))) +
   ggplot2::facet_wrap(~ category)
