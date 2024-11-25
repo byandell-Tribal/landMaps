@@ -36,6 +36,10 @@ maps for states, counties, and
 - [NASA Earth Observation Data](https://www.earthdata.nasa.gov/), including
 multispectral imaging.
 
+This is a companion to the Python package
+[landmapy](https://github.com/byandell-envsys/landmapy).
+They have slightly different goals at present, but aim is to have them converge.
+
 ## Use of this Repo and Package
 
 To install this package:
