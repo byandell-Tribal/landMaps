@@ -15,10 +15,18 @@ censusServer <- function(id, census_geometry) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
+    # TODO: replace state names by state abb in census_names.
+    # TODO: Need to be careful about how we search for county_states.
+    
+    # Vector of state names named by their abbreviations. 
+    state_names <- array(datasets::state.name,
+                         dimnames = list(datasets::state.abb))
+    
     census_names <- tidyr::unite(census_geometry, catname, 
                                  category, Name, sep = ": ")$catname
     output$catname <- shiny::renderUI({
-      shiny::selectizeInput(ns("catname"), "Name in category:", NULL)
+      shiny::selectizeInput(ns("catname"), "Names in category:", NULL,
+                            multiple = TRUE)
     })
     
     aiannh_states <- shiny::reactive({
@@ -37,8 +45,6 @@ censusServer <- function(id, census_geometry) {
                          multiple = TRUE)
     })
     
-    state_names <- array(datasets::state.name,
-                         dimnames = list(datasets::state.abb))
     county_states <- shiny::reactive({
       # Census uses whole name
       if(!shiny::isTruthy(input$county_states))
@@ -54,6 +60,7 @@ censusServer <- function(id, census_geometry) {
                          multiple = TRUE)
     })
     
+    # Subset `catname` on categories selected by `input$category`.
     catnames <- shiny::reactive({
       shiny::req(input$category)
       census_names[stringr::str_detect(census_names,

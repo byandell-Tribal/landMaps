@@ -36,15 +36,12 @@ landTableOutput <- function(id) {
 #' @rdname landTable
 #' @export
 landTableApp <- function() {
-  nativeLandSlug <- readRDS("data/NativeLandSlug.rds")
-  nativeLandUS <- readRDS("data/nativeLandUS.rds")
   census_geometry <- readRDS("data/census_geometry.rds")
   
   ui <- shiny::fluidPage(
     shiny::titlePanel("Land Maps"),
     shiny::sidebarPanel(
-      censusInput("census"),
-      nativeLandInput("nativeLand")
+      censusInput("census")
     ),
     shiny::mainPanel(
       landTableOutput("landTable")
@@ -52,14 +49,7 @@ landTableApp <- function() {
   ) 
   server <- function(input, output, session) {
     census_places <- censusServer("census", census_geometry)
-    nativeLand_places <- nativeLandServer("nativeLand",
-      nativeLandSlug, nativeLandUS, census_geometry)
-
-    places <- shiny::reactive({
-      order_places(nativeLand_places(), census_places())
-    })
-
-    landTableServer("landTable", places)
+    landTableServer("landTable", census_places)
   }
   shiny::shinyApp(ui, server)
 }
