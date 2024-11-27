@@ -28,8 +28,7 @@ landmaprServer <- function(id,
       if(shiny::req(input$dynamic) == "Static") {
         landGgplotInput(ns("landGgplot"))
       }
-    }
-                                    )
+    })
     output$landPlot <- shiny::renderUI({
       switch(shiny::req(input$dynamic),
         Static  = landGgplotOutput(ns("landGgplot")),

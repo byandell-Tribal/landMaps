@@ -8,9 +8,9 @@ editor: visual
 
 ```{r}
 #| context: setup
-nativeLandSlug <- readRDS("data/NativeLandSlug.rds")
-nativeLandUS <- readRDS("data/nativeLandUS.rds")
-census_geometry <- readRDS("data/census_geometry.rds")
+nativeLandSlug <- readRDS("../data/NativeLandSlug.rds")
+nativeLandUS <- readRDS("../data/nativeLandUS.rds")
+census_geometry <- readRDS("../data/census_geometry.rds")
 ```
 
 #  {.sidebar}
@@ -19,7 +19,7 @@ census_geometry <- readRDS("data/census_geometry.rds")
 landmapr::landmaprInput("landmapr")
 ```
 
-# Main Panel
+# 
 
 ##  {height="70%"}
 

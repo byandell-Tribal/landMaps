@@ -50,7 +50,7 @@ rsconnect/
 
 *.Rproj
 *.jpeg
-Images/
+images/
 *.cache/
 data/
 inst/misc

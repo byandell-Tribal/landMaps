@@ -1,0 +1,258 @@
+---
+title: "Land Mapps<br>with package `landmapr`"
+footer: "[quarto.org](https://quarto.org/)"
+format:
+  revealjs:
+    theme: slides.scss
+    transition: fade
+    slide-number: true
+# https://github.com/mine-cetinkaya-rundel/quarto-dashboards/blob/main/1-hello-dashboards/index.qmd
+---
+
+## Land Map Shiny App
+
+-   user interface `ui` and `server`
+-   combined with `shinyApp()` tool
+-   US Census Data demo
+-   `library(landmapr)`
+-   <https://github.com/byandell-envsys/landmapr>
+
+## Census App `censusApp()` {.scrollable .smaller}
+
+```{.r filename="https://github.com/byandell-envsys/landmapr/R/census.R" code-line-numbers="|2|4-14|15-18"}
+censusApp <- function() {
+  census_geometry <- readRDS("data/census_geometry.rds")
+  
+  ui <- shiny::fluidPage(
+    shiny::titlePanel("Census Maps"),
+    shiny::sidebarPanel(
+      censusInput("census"),
+      shiny::sliderInput("height", "Height:", 300, 800, 500, 100),
+      landGgplotInput("landGgplot")
+    ),
+    shiny::mainPanel(
+      landGgplotOutput("landGgplot")
+    )
+  )
+  server <- function(input, output, session) {
+    census_places <- censusServer("census", census_geometry)
+    landGgplotServer("landGgplot", input, census_places)
+  }
+  shiny::shinyApp(ui, server)
+}
+```
+
+- uses two shiny modules and external data
+- [census.R](https://github.com/byandell-envsys/landmapr/blob/main/R/census.R) filters US Census data
+- [landGgplot.R](https://github.com/byandell-envsys/landmapr/blob/main/R/landGgplot.R) plots figure
+- see [census.qmd](https://github.com/byandell-envsys/landmapr/blob/main/quarto/census.qmd) for Quarto version
+
+## Census file [census.R](https://github.com/byandell-envsys/landmapr/blob/main/R/census.R) {.scrollable .smaller}
+
+```{.r filename="https://github.com/byandell-envsys/landmapr/R/census.R" code-line-numbers="|1-10|11-14|15-18|19-23|"}
+censusServer <- function(id, census_geometry) {
+  shiny::moduleServer(id, function(input, output, session) {
+    ns <- session$ns
+    ...
+    shiny::reactive({ # places()
+      place_names <- ...
+      census_geometry[... place_names]
+    })
+  })
+}
+censusInput <- function(id) {
+  ns <- shiny::NS(id)
+  ...
+}
+censusOutput <- function(id) {
+  ns <- shiny::NS(id)
+  shiny::plotOutput(ns("main_plot"), height = "300px")
+}
+censusApp <- function() {
+  ui <- ...
+  server <- ...
+  shiny::shinyApp(ui, server)
+}
+```
+
+- `Server`, `Input`, `Output`, `App` functions
+- self-contained in one file
+- uses `landGgplot.R` in `censusApp()` to test use
+
+## Ggplot file [landGgplot.R](https://github.com/byandell-envsys/landmapr/blob/main/R/landGgplot.R) {.scrollable .smaller}
+
+```{.r filename="https://github.com/byandell-envsys/landmapr/R/landGgplot.R" code-line-numbers="|1-8|9-19|20-35|"}
+landGgplotServer <- function(id, mainpar, places = shiny::reactive(NULL)) {
+  shiny::moduleServer(id, function(input, output, session) {
+    ns <- session$ns
+    ...
+    output$main_plot <- ...
+    output$show_plot <- ...
+  })
+}
+landGgplotInput <- function(id) {
+  ns <- shiny::NS(id)
+  shiny::fluidRow(
+    shiny::column(4, shiny::checkboxInput(ns("osm"), "Geo Layer?", TRUE)),
+    shiny::column(8, shiny::uiOutput(ns("zoomin"))),
+  )
+}
+landGgplotOutput <- function(id) {
+  ns <- shiny::NS(id)
+  shiny::uiOutput(ns("show_plot"))
+}
+landGgplotApp <- function() {
+  census_geometry <- readRDS("data/census_geometry.rds")
+  ui <- shiny::fluidPage(
+    shiny::titlePanel("Land Maps"),
+    shiny::sidebarPanel(
+      censusInput("census"),
+      shiny::sliderInput("height", "Height:", 300, 800, 500, 100),
+      landGgplotInput("landGgplot")),
+    shiny::mainPanel(landGgplotOutput("landGgplot"))
+  ) 
+  server <- function(input, output, session) {
+    census_places <- censusServer("census", census_geometry)
+    landGgplotServer("landGgplot", input, census_places)
+  }
+  shiny::shinyApp(ui, server)
+}
+```
+
+- `landGgplotApp()` uses `census.R` to test use
+
+
+## Full `landmapr` app {.scrollable .smaller}
+
+```{.r filename="https://github.com/byandell-envsys/landmapr/R/landmapr.R" code-line-numbers="|2-4|8-15|17-18"}
+landmaprApp <- function() {
+  nativeLandSlug <- readRDS("data/NativeLandSlug.rds")
+  nativeLandUS <- readRDS("data/nativeLandUS.rds")
+  census_geometry <- readRDS("data/census_geometry.rds")
+  
+  ui <- shiny::fluidPage(
+    shiny::titlePanel("Land Maps"),
+    shiny::sidebarPanel(
+      landmaprInput("landmapr")
+    ),
+    shiny::mainPanel(
+      landmaprOutput("landmapr"),
+      landmaprUI("landmapr")
+    )
+  ) 
+  server <- function(input, output, session) {
+    landmaprServer("landmapr",
+      nativeLandSlug, nativeLandUS, census_geometry)
+  }
+  shiny::shinyApp(ui, server)
+}
+```
+
+- read all data; use umbrella functions
+- `landmaprInput()`, `landmaprOutput()`, `landmaprUI()` organize pallette
+- `landmaprServer()` sets up logic
+- see [landmapr.qmd](https://github.com/byandell-envsys/landmapr/blob/main/quarto/landmapr.qmd) for Quarto version
+
+## Server for full `landmapr` {.scrollable .smaller}
+
+```{.r filename="https://github.com/byandell-envsys/landmapr/R/landmapr.R" code-line-numbers="|3-4|6-8|14-16|"}
+landmaprServer <- function(id,
+    nativeLandSlug, nativeLandUS, census_geometry) {
+  shiny::moduleServer(id, function(input, output, session) {
+    ns <- session$ns
+    
+    census_places <- censusServer("census", census_geometry)
+    nativeLand_places <- nativeLandServer("nativeLand",
+      nativeLandSlug, nativeLandUS, census_geometry)
+      
+    places <- shiny::reactive({
+      order_places(nativeLand_places(), census_places())
+    })
+    
+    landGgplotServer("landGgplot", input, places)
+    landTmapServer("landTmap", input, places)
+    landTableServer("landTable", places)
+    
+    output$geo <- shiny::renderUI({
+      if(shiny::req(input$dynamic) == "Static") {
+        landGgplotInput(ns("landGgplot"))
+      }
+    })
+    output$landPlot <- shiny::renderUI({
+      switch(shiny::req(input$dynamic),
+        Static  = landGgplotOutput(ns("landGgplot")),
+        Dynamic = landTmapOutput(ns("landTmap")))
+    })
+  })
+}
+```
+
+- [census.R](https://github.com/byandell-envsys/landmapr/blob/main/R/census.R), [nativeLand.R](https://github.com/byandell-envsys/landmapr/blob/main/R/nativeLand.R) modules for map data
+- [landGgplot.R](https://github.com/byandell-envsys/landmapr/blob/main/R/landGgplot.R), [landTmap.R](https://github.com/byandell-envsys/landmapr/blob/main/R/landTmap.R), [landTable.R](https://github.com/byandell-envsys/landmapr/blob/main/R/landTable.R) modules for output
+- [landmapr.R](https://github.com/byandell-envsys/landmapr/blob/main/R/landmapr.R) module wraps around these 5 modules
+
+## Modular `Input`, `Output`, `UI` Components {.scrollable .smaller}
+
+```{.r filename="https://github.com/byandell-envsys/landmapr/R/landmapr.R" code-line-numbers="|2|4-9|14|18"}
+landmaprInput <- function(id) {
+  ns <- shiny::NS(id)
+  shiny::tagList(
+    censusInput(ns("census")),
+    nativeLandInput(ns("nativeLand")),
+    shiny::radioButtons(ns("dynamic"), "", c("Dynamic", "Static"),
+                        inline = TRUE),
+    shiny::sliderInput(ns("height"), "Height:", 300, 800, 500, 100),
+    shiny::uiOutput(ns("geo"))
+  )
+}
+landmaprOutput <- function(id) {
+  ns <- shiny::NS(id)
+  shiny::uiOutput(ns("landPlot"))
+}
+landmaprUI <- function(id) {
+  ns <- shiny::NS(id)
+  landTableOutput(ns("landTable"))
+}
+```
+## Dynamic Plot Logic {.scrollable .smaller}
+
+```{.r filename="https://github.com/byandell-envsys/landmapr/R/landmapr.R" code-line-numbers="|3-4|6-10|12-16|18-21|"}
+landmaprServer <- function(id, 
+    nativeLandSlug, nativeLandUS, census_geometry) {
+  shiny::moduleServer(id, function(input, output, session) {
+    ns <- session$ns
+...
+    output$landPlot <- shiny::renderUI({
+      switch(shiny::req(input$dynamic),
+        Static  = landGgplotOutput(ns("landGgplot")),
+        Dynamic = landTmapOutput(ns("landTmap")))
+    })
+...
+landmaprInput <- function(id) {
+  ns <- shiny::NS(id)
+...
+  shiny::radioButtons(ns("dynamic"), "", c("Dynamic", "Static"),
+                      inline = TRUE),
+...
+landmaprOutput <- function(id) {
+  ns <- shiny::NS(id)
+  shiny::uiOutput(ns("landPlot"))
+}
+```
+
+- `output$landPlot` switches on `input$dynamic` in `landmaprServer()`
+- `input$dynamic` set by `shiny::radioButtons` in `landmaprInput()`
+- `output$landPlot` invoked via `shiny::uiOutput()` from `landmaprOutput()`
+
+## Questions?
+
+:::: {.rows}
+::: {.row height="30%"}
+- <https://github.com/byandell-envsys/landmapr>
+- <https://byandell.github.io>
+:::
+
+::: {.row height="70%"}
+![](adobe-express-qr-code.png)
+:::
+::::

@@ -1,0 +1,36 @@
+---
+title: "Census Quarto"
+author: "Brian Yandell"
+format: dashboard
+server: shiny
+editor: visual
+---
+
+```{r}
+#| context: setup
+library(shiny)
+library(landmapr)
+census_geometry <- readRDS("../data/census_geometry.rds")
+```
+
+#  {.sidebar}
+
+## 
+
+```{r}
+censusInput("census")
+sliderInput("height", "Height:", 300, 800, 500, 100)
+landGgplotInput("landGgplot")
+```
+
+# 
+
+```{r}
+landGgplotOutput("landGgplot")
+```
+
+```{r}
+#| context: server
+census_places <- censusServer("census", census_geometry)
+landGgplotServer("landGgplot", input, census_places)
+```
