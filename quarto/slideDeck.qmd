@@ -1,5 +1,5 @@
 ---
-title: "Land Mapps<br>with package `landmapr`"
+title: "Shiny Modules<br>with package landmapr"
 footer: "[quarto.org](https://quarto.org/)"
 format:
   revealjs:
@@ -17,9 +17,9 @@ format:
 -   `library(landmapr)`
 -   <https://github.com/byandell-envsys/landmapr>
 
-## Census App `censusApp()` {.scrollable .smaller}
+## Census App [censusApp()](https://github.com/byandell-envsys/landmapr/blob/main/R/census.R) {.scrollable .smaller}
 
-```{.r filename="https://github.com/byandell-envsys/landmapr/R/census.R" code-line-numbers="|2|4-14|15-18"}
+```{.r filename="R/census.R" code-line-numbers="|2|4-14|15-18"}
 censusApp <- function() {
   census_geometry <- readRDS("data/census_geometry.rds")
   
@@ -49,7 +49,7 @@ censusApp <- function() {
 
 ## Census file [census.R](https://github.com/byandell-envsys/landmapr/blob/main/R/census.R) {.scrollable .smaller}
 
-```{.r filename="https://github.com/byandell-envsys/landmapr/R/census.R" code-line-numbers="|1-10|11-14|15-18|19-23|"}
+```{.r filename="R/census.R" code-line-numbers="|1-10|11-14|15-18|19-23|"}
 censusServer <- function(id, census_geometry) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
@@ -81,7 +81,7 @@ censusApp <- function() {
 
 ## Ggplot file [landGgplot.R](https://github.com/byandell-envsys/landmapr/blob/main/R/landGgplot.R) {.scrollable .smaller}
 
-```{.r filename="https://github.com/byandell-envsys/landmapr/R/landGgplot.R" code-line-numbers="|1-8|9-19|20-35|"}
+```{.r filename="R/landGgplot.R" code-line-numbers="|1-8|9-19|20-35|"}
 landGgplotServer <- function(id, mainpar, places = shiny::reactive(NULL)) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
@@ -122,9 +122,9 @@ landGgplotApp <- function() {
 - `landGgplotApp()` uses `census.R` to test use
 
 
-## Full `landmapr` app {.scrollable .smaller}
+## Full [landmapr](https://github.com/byandell-envsys/landmapr/blob/main/R/landmapr.R) app {.scrollable .smaller}
 
-```{.r filename="https://github.com/byandell-envsys/landmapr/R/landmapr.R" code-line-numbers="|2-4|8-15|17-18"}
+```{.r filename="R/landmapr.R" code-line-numbers="|2-4|8-15|17-18"}
 landmaprApp <- function() {
   nativeLandSlug <- readRDS("data/NativeLandSlug.rds")
   nativeLandUS <- readRDS("data/nativeLandUS.rds")
@@ -153,9 +153,9 @@ landmaprApp <- function() {
 - `landmaprServer()` sets up logic
 - see [landmapr.qmd](https://github.com/byandell-envsys/landmapr/blob/main/quarto/landmapr.qmd) for Quarto version
 
-## Server for full `landmapr` {.scrollable .smaller}
+## Server for full [landmapr.R](https://github.com/byandell-envsys/landmapr/blob/main/R/landmapr.R) {.scrollable .smaller}
 
-```{.r filename="https://github.com/byandell-envsys/landmapr/R/landmapr.R" code-line-numbers="|3-4|6-8|14-16|"}
+```{.r filename="R/landmapr.R" code-line-numbers="|3-4|6-8|14-16|"}
 landmaprServer <- function(id,
     nativeLandSlug, nativeLandUS, census_geometry) {
   shiny::moduleServer(id, function(input, output, session) {
@@ -193,7 +193,7 @@ landmaprServer <- function(id,
 
 ## Modular `Input`, `Output`, `UI` Components {.scrollable .smaller}
 
-```{.r filename="https://github.com/byandell-envsys/landmapr/R/landmapr.R" code-line-numbers="|2|4-9|14|18"}
+```{.r filename="R/landmapr.R" code-line-numbers="|2|4-9|14|18"}
 landmaprInput <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
@@ -214,9 +214,10 @@ landmaprUI <- function(id) {
   landTableOutput(ns("landTable"))
 }
 ```
+
 ## Dynamic Plot Logic {.scrollable .smaller}
 
-```{.r filename="https://github.com/byandell-envsys/landmapr/R/landmapr.R" code-line-numbers="|3-4|6-10|12-16|18-21|"}
+```{.r filename="R/landmapr.R" code-line-numbers="|3-4|6-10|12-16|18-21|"}
 landmaprServer <- function(id, 
     nativeLandSlug, nativeLandUS, census_geometry) {
   shiny::moduleServer(id, function(input, output, session) {
@@ -243,6 +244,14 @@ landmaprOutput <- function(id) {
 - `output$landPlot` switches on `input$dynamic` in `landmaprServer()`
 - `input$dynamic` set by `shiny::radioButtons` in `landmaprInput()`
 - `output$landPlot` invoked via `shiny::uiOutput()` from `landmaprOutput()`
+
+## Quarto Shiny Apps
+
+- [census.qmd](https://github.com/byandell-envsys/landmapr/blob/main/quarto/census.qmd) Quarto app based on
+[census.R](https://github.com/byandell-envsys/landmapr/blob/main/R/census.R)
+- [landmapr.qmd](https://github.com/byandell-envsys/landmapr/blob/main/quarto/landmapr.qmd) Quarto app based on
+[landmapr.R](https://github.com/byandell-envsys/landmapr/blob/main/R/landmapr.R)
+- [both.qmd](https://github.com/byandell-envsys/landmapr/blob/main/quarto/both.qmd) Quarto with both `census` and `landmapr` apps
 
 ## Questions?
 

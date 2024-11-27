@@ -1,0 +1,67 @@
+---
+title: "Census Dual Quarto"
+author: "Brian Yandell"
+format: dashboard
+server: shiny
+editor: visual
+---
+
+```{r}
+#| context: setup
+nativeLandSlug <- readRDS("../data/NativeLandSlug.rds")
+nativeLandUS <- readRDS("../data/nativeLandUS.rds")
+census_geometry <- readRDS("../data/census_geometry.rds")
+```
+
+
+# Census Shiny
+
+##  {.sidebar}
+
+### 
+
+```{r}
+landmapr::censusInput("census")
+shiny::sliderInput("height", "Height:", 300, 800, 500, 100)
+landmapr::landGgplotInput("landGgplot")
+```
+
+## 
+
+```{r}
+landmapr::landGgplotOutput("landGgplot")
+```
+
+```{r}
+#| context: server
+census_places <- landmapr::censusServer("census", census_geometry)
+landmapr::landGgplotServer("landGgplot", input, census_places)
+```
+
+# landmapr Shiny
+
+##  {.sidebar}
+
+```{r}
+landmapr::landmaprInput("landmapr")
+```
+
+## 
+
+###  {height="70%"}
+
+```{r}
+landmapr::landmaprOutput("landmapr")
+```
+
+###  {height="30%"}
+
+```{r}
+landmapr::landmaprUI("landmapr")
+```
+
+```{r}
+#| context: server
+landmapr::landmaprServer("landmapr",
+                         nativeLandSlug, nativeLandUS, census_geometry)
+```
